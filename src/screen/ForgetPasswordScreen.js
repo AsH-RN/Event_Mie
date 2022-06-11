@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable react/self-closing-comp */
 /* eslint-disable prettier/prettier */
 import React, {Component} from 'react';
 import {
@@ -19,14 +18,14 @@ import {
 } from 'react-native-responsive-screen';
 
 // Component
+import HeaderComponent from '../component/HeaderComponent';
 import ProcessingLoader from '../component/ProcessingLoader';
 import {showToast} from '../component/CustomToast';
-import HeaderComponent from '../component/HeaderComponent';
 
 // Icon
 import ic_login from '../assets/icon/ic_login.png';
-import facebook from '../assets/icon/facebook.png';
-import google from '../assets/icon/google.png';
+// import facebook from '../assets/icon/facebook.png';
+// import google from '../assets/icon/google.png';
 
 // Image
 import splash_image from '../assets/image/spalsh_image.png';
@@ -35,7 +34,7 @@ import splash_image from '../assets/image/spalsh_image.png';
 import {BASE_URL, makeRequest} from '../api/ApiInfo';
 
 // User Preference
-import {async_keys, storeData} from '../api/UserPreference';
+// import {async_keys, storeData} from '../api/UserPreference';
 
 // Validation
 import {isEmailAddress} from '../validation/FormValidator';
@@ -62,25 +61,14 @@ export default class LoginScreen extends Component {
     this.props.navigation.navigate('SignUp');
   };
 
-  handleForgetPassword = () => {
-    this.props.navigation.navigate('ForgetPassword');
-  };
-
   handleLogin = async () => {
     Keyboard.dismiss();
 
-    const {email, password} = this.state;
+    const {email} = this.state;
 
     // validation
     if (!isEmailAddress(email)) {
       Alert.alert('', 'Please enter email!', [{text: 'OK'}], {
-        cancelable: false,
-      });
-      return;
-    }
-
-    if (password.trim() === '') {
-      Alert.alert('', 'Please enter valid password!', [{text: 'OK'}], {
         cancelable: false,
       });
       return;
@@ -93,26 +81,29 @@ export default class LoginScreen extends Component {
       // preparing params
       const params = {
         email: email,
-        password: password,
-        device_name: 'android',
       };
 
       // calling api
-      const response = await makeRequest(BASE_URL + 'login', params, true);
+      const response = await makeRequest(
+        BASE_URL + 'password/remind',
+        params,
+        true,
+      );
 
       if (response) {
-        const {success, errors, token} = response;
+        const {success, message, errors} = response;
 
         if (success === true) {
           // stopping processing loader
           this.setState({showProcessingLoader: false});
 
-          console.log(response.data.id);
+          //   await storeData(async_keys.userId, data.id);
 
-          await storeData(async_keys.userId, token);
-          await storeData(async_keys.userInfo, response.data.id);
+          // showing toast
 
-          this.props.navigation.push('Home');
+          showToast(message);
+
+          this.props.navigation.pop();
         } else {
           const {username} = errors;
 
@@ -133,12 +124,13 @@ export default class LoginScreen extends Component {
     return (
       <ImageBackground style={styles.container} source={splash_image}>
         <HeaderComponent
-          title="Login"
+          title="Forget Password"
           navAction="back"
           nav={this.props.navigation}
         />
+
         <View style={styles.homeContainer}>
-          <Text style={styles.loginTextStyle}>Login</Text>
+          <Text style={styles.loginTextStyle}>Forget Password</Text>
 
           <View style={styles.inputContainer}>
             <TextInput
@@ -152,19 +144,6 @@ export default class LoginScreen extends Component {
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.loginFormTextInput}
-              placeholder="Password"
-              placeholderTextColor="#c4c3cb"
-              keyboardType="default"
-              underlineColorAndroid="transparent"
-              value={this.state.password}
-              onChangeText={this.handlePasswordChange}
-              InputProps={{disableUnderline: true}}
-            />
-          </View>
-
           <TouchableOpacity
             style={styles.buttonContainer}
             onPress={this.handleLogin}>
@@ -173,24 +152,20 @@ export default class LoginScreen extends Component {
               resizeMode="cover"
               style={styles.loginIconStyle}
             />
-            <Text style={styles.loginButtonTextStyle}>Login</Text>
+            <Text style={styles.loginButtonTextStyle}>Forget Password</Text>
           </TouchableOpacity>
 
-          <View style={styles.forgetAndRegisterContainer}>
-            <Text
-              style={styles.additionalTextStyle}
-              onPress={this.handleForgetPassword}>
-              Forgot Password?
-            </Text>
+          {/* <View style={styles.forgetAndRegisterContainer}>
+            <Text style={styles.additionalTextStyle}>Forgot Password?</Text>
 
             <Text
               style={styles.additionalTextStyle}
               onPress={this.handleRegister}>
               Register
             </Text>
-          </View>
+          </View> */}
 
-          <View style={styles.lineContainer}></View>
+          {/* <View style={styles.lineContainer}></View>
 
           <View style={styles.socialMediaContainer}>
             <Text style={styles.socialTextStyle}>Or Continue with</Text>
@@ -215,7 +190,7 @@ export default class LoginScreen extends Component {
                 <Text style={styles.facebookTextStyle}>Google</Text>
               </View>
             </View>
-          </View>
+          </View> */}
         </View>
 
         {this.state.showProcessingLoader && <ProcessingLoader />}

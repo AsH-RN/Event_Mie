@@ -1,14 +1,6 @@
 /* eslint-disable prettier/prettier */
 import React, {PureComponent} from 'react';
-import {
-  View,
-  Text,
-  TouchableHighlight,
-  Image,
-  StyleSheet,
-  Share,
-  Linking,
-} from 'react-native';
+import {View, Text, TouchableHighlight, Image, StyleSheet} from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -17,10 +9,12 @@ import SafeAreaView from 'react-native-safe-area-view';
 
 // Icon
 import ic_home from '../assets/icon/ic_home.png';
-// import ic_share from '../assets/icons/ic_share.png';
-// import ic_man from '../assets/icons/ic_man.png';
-// import ic_game from '../assets/icons/ic_game.png';
-// import ic_mail_support from '../assets/icons/ic_mail_support.png';
+import ic_footer_category from '../assets/icon/ic_footer_category.png';
+import ic_footer_event from '../assets/icon/ic_footer_event.png';
+import ic_footer_login from '../assets/icon/ic_footer_login.png';
+
+// User Preference
+import {async_keys, getData} from '../api/UserPreference';
 
 export default class FooterComponent extends PureComponent {
   constructor(props) {
@@ -32,29 +26,28 @@ export default class FooterComponent extends PureComponent {
     this.props.nav.navigate('Home');
   };
 
-  // handleShare = async () => {
-  //   try {
-  //     await Share.share({
-  //       title: 'Share me',
-  //       message:
-  //         'https://play.google.com/store/apps/details?id=com.GunjanPackage.gunjangroup',
-  //     });
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // };
+  handleEvent = async () => {
+    this.props.nav.navigate('EventList');
+  };
 
-  // handleProfile = () => {
-  //   this.props.nav.navigate('Profile');
-  // };
+  handleCategory = () => {
+    this.props.nav.navigate('MyBooking');
+  };
 
-  // handleGame = () => {
-  //   this.props.nav.navigate('GameHome');
-  // };
+  handleLogin = async () => {
+    // getting token from AsyncStorage
+    const token = await getData(async_keys.userId);
 
-  // handleSupport = () => {
-  //   this.props.nav.navigate('Contact');
-  // };
+    if (token === null) {
+      this.props.nav.navigate('Login');
+    } else {
+      this.props.nav.navigate('Profile');
+    }
+  };
+
+  handleScanTicket = () => {
+    this.props.nav.navigate('ScanTicket');
+  };
 
   render() {
     const {tab} = this.props;
@@ -86,44 +79,33 @@ export default class FooterComponent extends PureComponent {
 
         <TouchableHighlight
           underlayColor="transparent"
-          onPress={this.handleGame}
+          onPress={this.handleCategory}
           style={tab === 'Game' ? selectedTabStyle : styles.footerMenu}>
           <View style={styles.singleMenu}>
-            <Image source={ic_home} style={styles.footerNavigatorIcon} />
+            <Image
+              source={ic_footer_category}
+              style={styles.footerNavigatorIcon}
+            />
             <Text
               style={[
                 this.state.checkDarkMode === 1
                   ? styles.footerMenuTextBlack
                   : styles.footerMenuText,
               ]}>
-              Category
+              My Bookings
             </Text>
           </View>
         </TouchableHighlight>
 
         <TouchableHighlight
           underlayColor="transparent"
-          onPress={this.handleProfile}
+          onPress={this.handleEvent}
           style={tab === 'Profile' ? selectedTabStyle : styles.footerMenu}>
           <View style={styles.singleMenu}>
-            <Image source={ic_home} style={styles.footerNavigatorIcon} />
-            <Text
-              style={[
-                this.state.checkDarkMode === 1
-                  ? styles.footerMenuTextBlack
-                  : styles.footerMenuText,
-              ]}>
-              Profile
-            </Text>
-          </View>
-        </TouchableHighlight>
-
-        <TouchableHighlight
-          underlayColor="transparent"
-          onPress={this.handleShare}
-          style={tab === 'Cart' ? selectedTabStyle : styles.footerMenu}>
-          <View style={styles.singleMenu}>
-            <Image source={ic_home} style={styles.footerNavigatorIcon} />
+            <Image
+              source={ic_footer_event}
+              style={styles.footerNavigatorIcon}
+            />
             <Text
               style={[
                 this.state.checkDarkMode === 1
@@ -135,13 +117,13 @@ export default class FooterComponent extends PureComponent {
           </View>
         </TouchableHighlight>
 
-        {/* <TouchableHighlight
+        <TouchableHighlight
           underlayColor="transparent"
-          onPress={this.handleSupport}
-          style={tab === 'Blood' ? selectedTabStyle : styles.footerMenu}>
+          onPress={this.handleLogin}
+          style={tab === 'EventList' ? selectedTabStyle : styles.footerMenu}>
           <View style={styles.singleMenu}>
             <Image
-              source={ic_mail_support}
+              source={ic_footer_login}
               style={styles.footerNavigatorIcon}
             />
             <Text
@@ -150,7 +132,24 @@ export default class FooterComponent extends PureComponent {
                   ? styles.footerMenuTextBlack
                   : styles.footerMenuText,
               ]}>
-              Support
+              Login
+            </Text>
+          </View>
+        </TouchableHighlight>
+
+        {/* <TouchableHighlight
+          underlayColor="transparent"
+          onPress={this.handleScanTicket}
+          style={tab === 'ScanTicket' ? selectedTabStyle : styles.footerMenu}>
+          <View style={styles.singleMenu}>
+            <Image source={ic_home} style={styles.footerNavigatorIcon} />
+            <Text
+              style={[
+                this.state.checkDarkMode === 1
+                  ? styles.footerMenuTextBlack
+                  : styles.footerMenuText,
+              ]}>
+              Scan Ticket
             </Text>
           </View>
         </TouchableHighlight> */}

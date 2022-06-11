@@ -37,7 +37,7 @@ export default class SplashScreen extends Component {
     let initialArr = [
       {
         id: 1,
-        text: 'Event Mie',
+        text: 'Booking Qube',
       },
     ];
     // let index = [1, 3, 5];

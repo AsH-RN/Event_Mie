@@ -9,10 +9,10 @@ import {
 // Icons
 import ic_menu from '../assets/icon/ic_menu.png';
 import ic_back from '../assets/icon/ic_back.png';
-// import ic_header_cart from '../assets/icons/ic_header_cart.png';
+import ic_man from '../assets/icon/ic_man.png';
 
 // User Preference
-// import {async_keys, getData} from '../api/UserPreference';
+import {async_keys, getData} from '../api/UserPreference';
 
 const HeaderComponent = props => {
   // const [count, setCount] = useState(0);
@@ -52,6 +52,17 @@ const HeaderComponent = props => {
 
   const handleChange = event => {};
 
+  const handleProfile = async () => {
+    // getting token from AsyncStorage
+    const token = await getData(async_keys.userId);
+
+    if (token === null) {
+      nav.navigate('Login');
+    } else {
+      nav.navigate('Profile');
+    }
+  };
+
   return (
     <View style={styles.headerContainer}>
       <TouchableOpacity
@@ -66,6 +77,17 @@ const HeaderComponent = props => {
         onChange={handleChange}>
         {title}
       </Text>
+
+      <TouchableOpacity
+        onPress={handleProfile}
+        activeOpacity={1}
+        style={styles.notificationIconContainer}>
+        <Image
+          source={ic_man}
+          resizeMode="cover"
+          style={styles.cartIconStyle}
+        />
+      </TouchableOpacity>
 
       {/* <TouchableOpacity
         onPress={handleCart}
@@ -94,7 +116,7 @@ const styles = StyleSheet.create({
     height: hp(6),
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: wp(4),
+    paddingHorizontal: wp(2),
     backgroundColor: '#fff',
   },
   menuIconContainer: {

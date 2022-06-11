@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable prettier/prettier */
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable prettier/prettier */
 import React, {Component} from 'react';
@@ -10,11 +12,18 @@ import {
   StyleSheet,
   ImageBackground,
   TouchableOpacity,
+  Keyboard,
+  Alert,
 } from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
+
+// Component
+import HeaderComponent from '../component/HeaderComponent';
+import ProcessingLoader from '../component/ProcessingLoader';
+import {showToast} from '../component/CustomToast';
 
 // Icon
 import ic_login from '../assets/icon/ic_login.png';
@@ -24,6 +33,12 @@ import google from '../assets/icon/google.png';
 // Image
 import splash_image from '../assets/image/spalsh_image.png';
 
+// API
+import {BASE_URL, makeRequest} from '../api/ApiInfo';
+
+// Validation
+import {isEmailAddress} from '../validation/FormValidator';
+
 export default class LoginScreen extends Component {
   constructor(props) {
     super(props);
@@ -31,6 +46,7 @@ export default class LoginScreen extends Component {
       name: '',
       email: '',
       password: '',
+      showProcessingLoader: false,
     };
   }
 
@@ -46,6 +62,84 @@ export default class LoginScreen extends Component {
     this.setState({password});
   };
 
+  handleRegister = async () => {
+    Keyboard.dismiss();
+
+    const {name, email, password} = this.state;
+
+    // validation
+    if (name.trim() === '') {
+      Alert.alert('', 'Please enter name!', [{text: 'OK'}], {
+        cancelable: false,
+      });
+      return;
+    }
+
+    if (!isEmailAddress(email)) {
+      Alert.alert('', 'Please enter email!', [{text: 'OK'}], {
+        cancelable: false,
+      });
+      return;
+    }
+
+    if (password.trim() === '') {
+      Alert.alert('', 'Please enter valid password!', [{text: 'OK'}], {
+        cancelable: false,
+      });
+      return;
+    }
+
+    try {
+      // starting processing loader
+      this.setState({showProcessingLoader: true});
+
+      // preparing params
+      const params = {
+        name: name,
+        email: email,
+        password: password,
+        accept: 'true',
+      };
+
+      // calling api
+      const response = await makeRequest(BASE_URL + 'register', params, true);
+
+      // processing response
+      if (response) {
+        const {status, message, errors} = response;
+
+        if (status === true) {
+          // stopping processing loader
+          this.setState({showProcessingLoader: false});
+
+          // showing toast
+          showToast(message);
+
+          // navigating to login screen
+          this.props.navigation.navigate('Login');
+        } else if (errors) {
+          // const {name, email, password} = errors;
+
+          //   // stopping processing loader
+          this.setState({showProcessingLoader: false});
+
+          if (errors.name) {
+            // showing toast
+            showToast(name[0]);
+          } else if (errors.email) {
+            // showing toast
+            showToast(email[0]);
+          } else if (errors.password) {
+            // showing toast
+            showToast(errors.password[0]);
+          }
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   handleLogin = async () => {
     this.props.navigation.navigate('Login');
   };
@@ -53,6 +147,12 @@ export default class LoginScreen extends Component {
   render() {
     return (
       <ImageBackground style={styles.container} source={splash_image}>
+        <HeaderComponent
+          title="Register"
+          navAction="back"
+          nav={this.props.navigation}
+        />
+
         <View style={styles.homeContainer}>
           <Text style={styles.loginTextStyle}>Register</Text>
 
@@ -65,7 +165,6 @@ export default class LoginScreen extends Component {
               underlineColorAndroid="transparent"
               value={this.state.name}
               onChangeText={this.handleNameChange}
-              InputProps={{disableUnderline: true}}
             />
           </View>
 
@@ -77,8 +176,7 @@ export default class LoginScreen extends Component {
               keyboardType="default"
               underlineColorAndroid="transparent"
               value={this.state.email}
-              onChangeText={this.handlePasswordChange}
-              InputProps={{disableUnderline: true}}
+              onChangeText={this.handleEmailChange}
             />
           </View>
 
@@ -91,7 +189,6 @@ export default class LoginScreen extends Component {
               underlineColorAndroid="transparent"
               value={this.state.password}
               onChangeText={this.handlePasswordChange}
-              InputProps={{disableUnderline: true}}
             />
           </View>
 
@@ -105,7 +202,7 @@ export default class LoginScreen extends Component {
 
           <TouchableOpacity
             style={styles.buttonContainer}
-            onPress={this.handleLogin}>
+            onPress={this.handleRegister}>
             <Image
               source={ic_login}
               resizeMode="cover"
@@ -151,6 +248,8 @@ export default class LoginScreen extends Component {
             </View>
           </View>
         </View>
+
+        {this.state.showProcessingLoader && <ProcessingLoader />}
       </ImageBackground>
     );
   }

@@ -18,165 +18,584 @@ import {
 import {FlatGrid} from 'react-native-super-grid';
 
 // Component
+import CustomLoader from '../component/CustomLoader';
 import HeaderComponent from '../component/HeaderComponent';
 import FooterComponent from '../component/FooterComponent';
 
 // Icon
+
 import ic_event from '../assets/icon/ic_event.png';
 import ic_search from '../assets/icon/ic_search.png';
 
 // Image
-import featured_event_image from '../assets/image/featured_event_image.jpg';
+// import featured_event_image from '../assets/image/featured_event_image.jpg';
 import splash_image from '../assets/image/spalsh_image.png';
-import event_category_image from '../assets/image/event_category_image.jpg';
+// import event_category_image from '../assets/image/event_category_image.jpg';
 import banner from '../assets/image/banner.jpg';
+
+// API Info
+import {BASE_URL} from '../api/ApiInfo';
 
 export default class HomeScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
       search: '',
-      featureEventList: [
-        {
-          id: 1,
-          image: featured_event_image,
-          date: '01 Oct 2023',
-          date1: '30 Nov 2023',
-          place: 'Lanzhou',
-          eventTitle: 'VR assistant Workshop',
-          eventDescription:
-            'Prevailed mr tolerably discourage assurance estimable applauded to so. Him everything melancholy',
-          postedBy: '@Roller Rink',
-          cost: 'Free',
-          earlyBid: '10.00 USD',
-          eventType: 'Business & Seminar',
-          daysLeft: '492 Days Left',
-          eventTime: 'Upcoming',
-          eventWorth: 'Free',
-          eventRoutine: 'Repetitive Weekly',
-        },
-        {
-          id: 2,
-          image: featured_event_image,
-          date: '01 Oct 2023',
-          date1: '30 Nov 2023',
-          place: 'Lanzhou',
-          eventTitle: 'VR assistant Workshop',
-          eventDescription:
-            'Prevailed mr tolerably discourage assurance estimable applauded to so. Him everything melancholy',
-          postedBy: '@Roller Rink',
-          cost: 'Free',
-          earlyBid: '10.00 USD',
-          eventType: 'Business & Seminar',
-          daysLeft: '492 Days Left',
-          eventTime: 'Upcoming',
-          eventWorth: 'Free',
-          eventRoutine: 'Repetitive Weekly',
-        },
-
-        {
-          id: 3,
-          image: featured_event_image,
-          date: '01 Oct 2023',
-          date1: '30 Nov 2023',
-          place: 'Lanzhou',
-          eventTitle: 'VR assistant Workshop',
-          eventDescription:
-            'Prevailed mr tolerably discourage assurance estimable applauded to so. Him everything melancholy',
-          postedBy: '@Roller Rink',
-          cost: 'Free',
-          earlyBid: '10.00 USD',
-          eventType: 'Business & Seminar',
-          daysLeft: '492 Days Left',
-          eventTime: 'Upcoming',
-          eventWorth: 'Free',
-          eventRoutine: 'Repetitive Weekly',
-        },
-
-        {
-          id: 4,
-          image: featured_event_image,
-          date: '01 Oct 2023',
-          date1: '30 Nov 2023',
-          place: 'Lanzhou',
-          eventTitle: 'VR assistant Workshop',
-          eventDescription:
-            'Prevailed mr tolerably discourage assurance estimable applauded to so. Him everything melancholy',
-          postedBy: '@Roller Rink',
-          cost: 'Free',
-          earlyBid: '10.00 USD',
-          eventType: 'Business & Seminar',
-          daysLeft: '492 Days Left',
-          eventTime: 'Upcoming',
-          eventWorth: 'Free',
-          eventRoutine: 'Repetitive Weekly',
-        },
-      ],
-      eventCategoryList: [
-        {
-          id: 1,
-          image: event_category_image,
-          title: 'Business & Seminars',
-        },
-        {
-          id: 2,
-          image: event_category_image,
-          title: 'Business & Seminars',
-        },
-        {
-          id: 3,
-          image: event_category_image,
-          title: 'Business & Seminars',
-        },
-        {
-          id: 4,
-          image: event_category_image,
-          title: 'Business & Seminars',
-        },
-      ],
+      featureEventList: [],
+      eventCategoryList: [],
+      upcomingEventList: [],
+      topSellingEvents: [],
+      exploreCitiesList: [],
+      imageURL: null,
+      checkFilter: null,
+      searchResponse: [],
+      isLoading: true,
     };
   }
+
+  componentDidMount() {
+    this.fetchEventData();
+  }
+
+  fetchEventData = async () => {
+    const axios = require('axios');
+
+    try {
+      // calling api
+      await axios
+        .get(BASE_URL + 'landingPage')
+
+        // processing response
+        .then(response => {
+          let newResponse = response;
+          this.setState({imageURL: newResponse.data.data.image_url_prefix});
+
+          if (newResponse) {
+            const {success} = newResponse.data;
+
+            console.log(newResponse.data.data.featured_events);
+
+            if (success === true) {
+              this.setState({
+                featureEventList: newResponse.data.data.featured_events,
+                eventCategoryList: newResponse.data.data.cities_events,
+                upcomingEventList: newResponse.data.data.upcomming_events,
+                topSellingEvents: newResponse.data.data.top_selling_events,
+                exploreCitiesList: newResponse.data.data.cities_events,
+                isLoading: false,
+              });
+            }
+          }
+        });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  fetchFilterData = async () => {
+    const {search} = this.state;
+
+    this.props.navigation.navigate('EventList', {searchInfo: {search}});
+  };
 
   handleSearchChanged = search => {
     this.setState({search});
   };
 
-  handleEvent = () => {
-    this.props.navigation.navigate('Login');
+  handleEvent = item => {
+    const slug = item.slug;
+    // console.log(slug);
+    this.props.navigation.navigate('ViewEvent', {slugTitle: {slug}});
+  };
+
+  handleAllEvent = () => {
+    this.props.navigation.navigate('ViewEvent');
   };
 
   render() {
-    return (
-      <SafeAreaView style={styles.container}>
-        <HeaderComponent title="Home" nav={this.props.navigation} />
-        <ScrollView
-        // contentContainerStyle={{flex: 1}}
-        >
-          <View style={styles.homeContainer}>
-            <View style={styles.bannerContainer}>
-              <Image
-                source={banner}
-                resizeMode="cover"
-                style={styles.bannerImageStyle}
-              />
-            </View>
-            <View style={styles.searchContainer}>
-              <View style={styles.inputContainer}>
+    const {isLoading} = this.state;
+
+    if (isLoading) {
+      return <CustomLoader />;
+    }
+
+    const imageUrl = 'https://devdemo.shrigenesis.com/events_app/storage/';
+
+    if (this.state.checkFilter === null) {
+      return (
+        <SafeAreaView style={styles.container}>
+          <HeaderComponent title="Home" nav={this.props.navigation} />
+          <ScrollView
+          // contentContainerStyle={{flex: 1}}
+          >
+            <View style={styles.homeContainer}>
+              <View style={styles.bannerContainer}>
                 <Image
-                  source={ic_event}
+                  source={banner}
                   resizeMode="cover"
-                  style={styles.eventIconStyle}
+                  style={styles.bannerImageStyle}
                 />
-                <TextInput
-                  style={styles.loginFormTextInput}
-                  placeholder="Type Event Name/Venue/City/State"
-                  placeholderTextColor="#c4c3cb"
-                  keyboardType="default"
-                  underlineColorAndroid="transparent"
-                  value={this.state.search}
-                  onChangeText={this.handleSearchChanged}
-                  // InputProps={{disableUnderline: true}}
+              </View>
+              <View style={styles.searchContainer}>
+                <View style={styles.inputContainer}>
+                  <Image
+                    source={ic_event}
+                    resizeMode="cover"
+                    style={styles.eventIconStyle}
+                  />
+                  <TextInput
+                    style={styles.loginFormTextInput}
+                    placeholder="Type Event Name/Venue/City/State"
+                    placeholderTextColor="#838383"
+                    keyboardType="default"
+                    underlineColorAndroid="transparent"
+                    value={this.state.search}
+                    onChangeText={this.handleSearchChanged}
+                    // InputProps={{disableUnderline: true}}
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.searchButtonContainer}
+                onPress={this.fetchFilterData}>
+                <Image
+                  source={ic_search}
+                  resizeMode="cover"
+                  style={styles.searchIconStyle}
                 />
+                <Text style={styles.searchEventText}>Search Event</Text>
+              </TouchableOpacity>
+
+              <View style={styles.featuredEventContainer}>
+                <Text style={styles.featuredEventText}>Featured Event</Text>
+                {this.state.featureEventList.map((item, index) => {
+                  const htmlTagRegex = /<[^>]*>?/gm;
+                  const description = item.description
+                    .replace(htmlTagRegex, '')
+                    .replace(/&nbsp;/gm, '');
+
+                  // calculating remaining days between two dates
+                  const endDate = new Date(item.end_date);
+                  const startDate = new Date(item.start_date);
+
+                  // One day in milliseconds
+                  const oneDay = 1000 * 60 * 60 * 24;
+
+                  // Calculating the time difference between two dates
+                  const diffInTime = endDate.getTime() - startDate.getTime();
+
+                  const remainingDays = Math.round(diffInTime / oneDay);
+
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      style={styles.featuredEventBox}
+                      onPress={() => {
+                        this.handleEvent(item);
+                      }}>
+                      <Image
+                        source={{uri: imageUrl + item.thumbnail}}
+                        resizeMode="cover"
+                        style={styles.featuredImageStyle}
+                      />
+
+                      <View style={styles.eventDateAndPlaceContainer}>
+                        <Text style={styles.featuredEventDateText}>
+                          {item.start_date}
+                        </Text>
+
+                        <Text style={styles.featuredEventDateText}>
+                          {item.end_date}
+                        </Text>
+
+                        <Text style={styles.featuredEventDateText}>
+                          {item.city}
+                        </Text>
+                      </View>
+
+                      <Text style={styles.eventTitleTextStyle}>
+                        {item.title}
+                      </Text>
+
+                      <Text
+                        style={styles.eventDescriptionTextStyle}
+                        numberOfLines={2}>
+                        {description}
+                      </Text>
+
+                      <Text style={styles.postedByTextStyle}>
+                        {'@' + item.venue}
+                      </Text>
+
+                      <View style={styles.eventBidContainer}>
+                        <View style={styles.eventCostContainer}>
+                          <Text style={styles.constTextStyle}>
+                            Free: {item.cost}
+                          </Text>
+                        </View>
+
+                        <View style={styles.eventBidAmountContainer}>
+                          <Text style={styles.bidTextStyle}>
+                            Early Bid: {item.earlyBid}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.eventTypeContainer}>
+                        <Text style={styles.eventTypeText}>
+                          {item.category_name}
+                        </Text>
+                      </View>
+
+                      <View style={styles.daysLeftContainer}>
+                        <Text style={styles.eventDaysLeftText}>
+                          {remainingDays + 'Days Left'}
+                        </Text>
+                      </View>
+
+                      <View style={styles.eventTimeContainer}>
+                        <Text style={styles.eventTimeText}>Upcoming</Text>
+                      </View>
+
+                      <View style={styles.eventWorthContainer}>
+                        <Text style={styles.eventWorthText}>
+                          {item.eventWorth}
+                        </Text>
+                      </View>
+
+                      <View style={styles.eventRoutineContainer}>
+                        <Text style={styles.eventRoutineText}>
+                          {item.eventRoutine}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={this.handleAllEvent}>
+                  <Text style={styles.buttonText}>View All Event</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.featuredEventText}>Event Category</Text>
+              <ImageBackground
+                source={splash_image}
+                style={styles.eventCategoryContainer}>
+                <FlatGrid
+                  itemDimension={134}
+                  data={this.state.eventCategoryList}
+                  // style={styles.gridView}
+                  spacing={2}
+                  renderItem={({item}) => (
+                    <TouchableOpacity style={styles.categoryContainer}>
+                      <ImageBackground
+                        source={{uri: imageUrl + item.poster}}
+                        resizeMode="cover"
+                        style={styles.categoryImageStyle}>
+                        <Text style={styles.categoryTitleText}>
+                          {item.city}
+                        </Text>
+                      </ImageBackground>
+                    </TouchableOpacity>
+                  )}
+                />
+              </ImageBackground>
+
+              <View style={styles.featuredEventContainer}>
+                <Text style={styles.featuredEventText}>Upcoming Event</Text>
+                {this.state.upcomingEventList.map(item => {
+                  const htmlTagRegex = /<[^>]*>?/gm;
+                  const description = item.description
+                    .replace(htmlTagRegex, '')
+                    .replace(/&nbsp;/gm, '');
+
+                  // calculating remaining days between two dates
+                  const endDate = new Date(item.end_date);
+                  const startDate = new Date(item.start_date);
+
+                  // One day in milliseconds
+                  const oneDay = 1000 * 60 * 60 * 24;
+
+                  // Calculating the time difference between two dates
+                  const diffInTime = endDate.getTime() - startDate.getTime();
+
+                  const remainingDays = Math.round(diffInTime / oneDay);
+
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      style={styles.featuredEventBox}
+                      onPress={() => {
+                        this.handleEvent(item);
+                      }}>
+                      <Image
+                        source={{uri: imageUrl + item.thumbnail}}
+                        resizeMode="cover"
+                        style={styles.featuredImageStyle}
+                      />
+
+                      <View style={styles.eventDateAndPlaceContainer}>
+                        <Text style={styles.featuredEventDateText}>
+                          {item.start_date}
+                        </Text>
+
+                        <Text style={styles.featuredEventDateText}>
+                          {item.end_date}
+                        </Text>
+
+                        <Text style={styles.featuredEventDateText}>
+                          {item.city}
+                        </Text>
+                      </View>
+
+                      <Text style={styles.eventTitleTextStyle}>
+                        {item.title}
+                      </Text>
+
+                      <Text
+                        style={styles.eventDescriptionTextStyle}
+                        numberOfLines={2}>
+                        {description}
+                      </Text>
+
+                      <Text style={styles.postedByTextStyle}>
+                        {'@' + item.venue}
+                      </Text>
+
+                      <View style={styles.eventBidContainer}>
+                        <View style={styles.eventCostContainer}>
+                          <Text style={styles.constTextStyle}>
+                            Free: {item.cost}
+                          </Text>
+                        </View>
+
+                        <View style={styles.eventBidAmountContainer}>
+                          <Text style={styles.bidTextStyle}>
+                            Early Bid: {item.earlyBid}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.eventTypeContainer}>
+                        <Text style={styles.eventTypeText}>
+                          {item.category_name}
+                        </Text>
+                      </View>
+
+                      <View style={styles.daysLeftContainer}>
+                        <Text style={styles.eventDaysLeftText}>
+                          {remainingDays + 'Days Left'}
+                        </Text>
+                      </View>
+
+                      <View style={styles.eventTimeContainer}>
+                        <Text style={styles.eventTimeText}>Upcoming</Text>
+                      </View>
+
+                      <View style={styles.eventWorthContainer}>
+                        <Text style={styles.eventWorthText}>
+                          {item.eventWorth}
+                        </Text>
+                      </View>
+
+                      <View style={styles.eventRoutineContainer}>
+                        <Text style={styles.eventRoutineText}>
+                          {item.eventRoutine}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={this.handleAllEvent}>
+                  <Text style={styles.buttonText}>View All Event</Text>
+                </TouchableOpacity>
+              </View>
+
+              <ImageBackground
+                source={splash_image}
+                style={styles.eventCategoryContainer1}>
+                <Text style={styles.featuredEventText1}>
+                  Top Selling Events
+                </Text>
+                {this.state.topSellingEvents.map(item => {
+                  const htmlTagRegex = /<[^>]*>?/gm;
+                  const description = item.description
+                    .replace(htmlTagRegex, '')
+                    .replace(/&nbsp;/gm, '');
+
+                  // calculating remaining days between two dates
+                  const endDate = new Date(item.end_date);
+                  const startDate = new Date(item.start_date);
+
+                  // One day in milliseconds
+                  const oneDay = 1000 * 60 * 60 * 24;
+
+                  // Calculating the time difference between two dates
+                  const diffInTime = endDate.getTime() - startDate.getTime();
+
+                  const remainingDays = Math.round(diffInTime / oneDay);
+
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      style={styles.featuredEventBox}
+                      onPress={() => {
+                        this.handleEvent(item);
+                      }}>
+                      <Image
+                        source={{uri: imageUrl + item.thumbnail}}
+                        resizeMode="cover"
+                        style={styles.featuredImageStyle}
+                      />
+
+                      <View style={styles.eventDateAndPlaceContainer}>
+                        <Text style={styles.featuredEventDateText}>
+                          {item.start_date}
+                        </Text>
+
+                        <Text style={styles.featuredEventDateText}>
+                          {item.end_date}
+                        </Text>
+
+                        <Text style={styles.featuredEventDateText}>
+                          {item.city}
+                        </Text>
+                      </View>
+
+                      <Text style={styles.eventTitleTextStyle}>
+                        {item.title}
+                      </Text>
+
+                      <Text
+                        style={styles.eventDescriptionTextStyle}
+                        numberOfLines={2}>
+                        {description}
+                      </Text>
+
+                      <Text style={styles.postedByTextStyle}>
+                        {'@' + item.venue}
+                      </Text>
+
+                      <View style={styles.eventBidContainer}>
+                        <View style={styles.eventCostContainer}>
+                          <Text style={styles.constTextStyle}>
+                            Free: {item.cost}
+                          </Text>
+                        </View>
+
+                        <View style={styles.eventBidAmountContainer}>
+                          <Text style={styles.bidTextStyle}>
+                            Early Bid: {item.earlyBid}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.eventTypeContainer}>
+                        <Text style={styles.eventTypeText}>
+                          {item.category_name}
+                        </Text>
+                      </View>
+
+                      <View style={styles.daysLeftContainer}>
+                        <Text style={styles.eventDaysLeftText}>
+                          {remainingDays + 'Days Left'}
+                        </Text>
+                      </View>
+
+                      <View style={styles.eventTimeContainer}>
+                        <Text style={styles.eventTimeText}>Upcoming</Text>
+                      </View>
+
+                      <View style={styles.eventWorthContainer}>
+                        <Text style={styles.eventWorthText}>
+                          {item.eventWorth}
+                        </Text>
+                      </View>
+
+                      <View style={styles.eventRoutineContainer}>
+                        <Text style={styles.eventRoutineText}>
+                          {item.eventRoutine}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={this.handleAllEvent}>
+                  <Text style={styles.buttonText}>View All Event</Text>
+                </TouchableOpacity>
+              </ImageBackground>
+
+              <Text style={styles.featuredEventText}>Explore Best Cities</Text>
+              <ImageBackground
+                source={splash_image}
+                style={styles.eventCategoryContainer}>
+                <FlatGrid
+                  itemDimension={134}
+                  data={this.state.exploreCitiesList}
+                  // style={styles.gridView}
+                  spacing={2}
+                  renderItem={({item}) => (
+                    <TouchableOpacity style={styles.categoryContainer}>
+                      <ImageBackground
+                        source={{uri: imageUrl + item.poster}}
+                        resizeMode="cover"
+                        style={styles.categoryImageStyle}>
+                        <Text style={styles.categoryTitleText}>
+                          {item.city}
+                        </Text>
+                      </ImageBackground>
+                    </TouchableOpacity>
+                  )}
+                />
+              </ImageBackground>
+            </View>
+          </ScrollView>
+
+          <FooterComponent nav={this.props.navigation} />
+        </SafeAreaView>
+      );
+    } else {
+      return (
+        <SafeAreaView style={styles.container}>
+          <HeaderComponent title="Home" nav={this.props.navigation} />
+          <ScrollView
+          // contentContainerStyle={{flex: 1}}
+          >
+            <View style={styles.homeContainer}>
+              <View style={styles.bannerContainer}>
+                <Image
+                  source={banner}
+                  resizeMode="cover"
+                  style={styles.bannerImageStyle}
+                />
+              </View>
+              <View style={styles.searchContainer}>
+                <View style={styles.inputContainer}>
+                  <Image
+                    source={ic_event}
+                    resizeMode="cover"
+                    style={styles.eventIconStyle}
+                  />
+                  <TextInput
+                    style={styles.loginFormTextInput}
+                    placeholder="Type Event Name/Venue/City/State"
+                    placeholderTextColor="#c4c3cb"
+                    keyboardType="default"
+                    underlineColorAndroid="transparent"
+                    value={this.state.search}
+                    onChangeText={this.handleSearchChanged}
+                    // InputProps={{disableUnderline: true}}
+                  />
+                </View>
               </View>
 
               <TouchableOpacity style={styles.searchButtonContainer}>
@@ -187,327 +606,107 @@ export default class HomeScreen extends Component {
                 />
                 <Text style={styles.searchEventText}>Search Event</Text>
               </TouchableOpacity>
+
+              <View style={styles.featuredEventContainer}>
+                <Text style={styles.featuredEventText}>Searched</Text>
+                {this.state.searchResponse.map((item, index) => {
+                  const htmlTagRegex = /<[^>]*>?/gm;
+                  const description = item.description
+                    .replace(htmlTagRegex, '')
+                    .replace(/&nbsp;/gm, '');
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      style={styles.featuredEventBox}
+                      onPress={this.handleEvent}>
+                      <Image
+                        source={{uri: imageUrl + item.thumbnail}}
+                        resizeMode="cover"
+                        style={styles.featuredImageStyle}
+                      />
+
+                      <View style={styles.eventDateAndPlaceContainer}>
+                        <Text style={styles.featuredEventDateText}>
+                          {item.start_date}
+                        </Text>
+
+                        <Text style={styles.featuredEventDateText}>
+                          {item.end_date}
+                        </Text>
+
+                        <Text style={styles.featuredEventDateText}>
+                          {item.city}
+                        </Text>
+                      </View>
+
+                      <Text style={styles.eventTitleTextStyle}>
+                        {item.title}
+                      </Text>
+
+                      <Text
+                        style={styles.eventDescriptionTextStyle}
+                        numberOfLines={2}>
+                        {description}
+                      </Text>
+
+                      <Text style={styles.postedByTextStyle}>
+                        {'@' + item.venue}
+                      </Text>
+
+                      <View style={styles.eventBidContainer}>
+                        <View style={styles.eventCostContainer}>
+                          <Text style={styles.constTextStyle}>
+                            Free: {item.cost}
+                          </Text>
+                        </View>
+
+                        <View style={styles.eventBidAmountContainer}>
+                          <Text style={styles.bidTextStyle}>
+                            Early Bid: {item.earlyBid}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.eventTypeContainer}>
+                        <Text style={styles.eventTypeText}>
+                          {item.category_name}
+                        </Text>
+                      </View>
+
+                      <View style={styles.daysLeftContainer}>
+                        <Text style={styles.eventDaysLeftText}>
+                          {item.daysLeft}
+                        </Text>
+                      </View>
+
+                      <View style={styles.eventTimeContainer}>
+                        <Text style={styles.eventTimeText}>
+                          {item.eventTime}
+                        </Text>
+                      </View>
+
+                      <View style={styles.eventWorthContainer}>
+                        <Text style={styles.eventWorthText}>
+                          {item.eventWorth}
+                        </Text>
+                      </View>
+
+                      <View style={styles.eventRoutineContainer}>
+                        <Text style={styles.eventRoutineText}>
+                          {item.eventRoutine}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
+          </ScrollView>
 
-            <View style={styles.featuredEventContainer}>
-              <Text style={styles.featuredEventText}>Featured Event</Text>
-              {this.state.featureEventList.map(item => {
-                return (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    style={styles.featuredEventBox}
-                    onPress={this.handleEvent}>
-                    <Image
-                      source={item.image}
-                      resizeMode="cover"
-                      style={styles.featuredImageStyle}
-                    />
-
-                    <View style={styles.eventDateAndPlaceContainer}>
-                      <Text style={styles.featuredEventDateText}>
-                        {item.date}
-                      </Text>
-
-                      <Text style={styles.featuredEventDateText}>
-                        {item.date1}
-                      </Text>
-
-                      <Text style={styles.featuredEventDateText}>
-                        {item.place}
-                      </Text>
-                    </View>
-
-                    <Text style={styles.eventTitleTextStyle}>
-                      {item.eventTitle}
-                    </Text>
-
-                    <Text
-                      style={styles.eventDescriptionTextStyle}
-                      numberOfLines={2}>
-                      {item.eventDescription}
-                    </Text>
-
-                    <Text style={styles.postedByTextStyle}>
-                      {item.postedBy}
-                    </Text>
-
-                    <View style={styles.eventBidContainer}>
-                      <View style={styles.eventCostContainer}>
-                        <Text style={styles.constTextStyle}>
-                          Free: {item.cost}
-                        </Text>
-                      </View>
-
-                      <View style={styles.eventBidAmountContainer}>
-                        <Text style={styles.bidTextStyle}>
-                          Early Bid: {item.earlyBid}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.eventTypeContainer}>
-                      <Text style={styles.eventTypeText}>{item.eventType}</Text>
-                    </View>
-
-                    <View style={styles.daysLeftContainer}>
-                      <Text style={styles.eventDaysLeftText}>
-                        {item.daysLeft}
-                      </Text>
-                    </View>
-
-                    <View style={styles.eventTimeContainer}>
-                      <Text style={styles.eventTimeText}>{item.eventTime}</Text>
-                    </View>
-
-                    <View style={styles.eventWorthContainer}>
-                      <Text style={styles.eventWorthText}>
-                        {item.eventWorth}
-                      </Text>
-                    </View>
-
-                    <View style={styles.eventRoutineContainer}>
-                      <Text style={styles.eventRoutineText}>
-                        {item.eventRoutine}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-
-              <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>View All Event</Text>
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.featuredEventText}>Event Category</Text>
-            <ImageBackground
-              source={splash_image}
-              style={styles.eventCategoryContainer}>
-              <FlatGrid
-                itemDimension={134}
-                data={this.state.eventCategoryList}
-                // style={styles.gridView}
-                spacing={2}
-                renderItem={({item}) => (
-                  <TouchableOpacity style={styles.categoryContainer}>
-                    <ImageBackground
-                      source={item.image}
-                      resizeMode="cover"
-                      style={styles.categoryImageStyle}>
-                      <Text style={styles.categoryTitleText}>{item.title}</Text>
-                    </ImageBackground>
-                  </TouchableOpacity>
-                )}
-              />
-            </ImageBackground>
-
-            <View style={styles.featuredEventContainer}>
-              <Text style={styles.featuredEventText}>Upcoming Event</Text>
-              {this.state.featureEventList.map(item => {
-                return (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    style={styles.featuredEventBox}>
-                    <Image
-                      source={item.image}
-                      resizeMode="cover"
-                      style={styles.featuredImageStyle}
-                    />
-
-                    <View style={styles.eventDateAndPlaceContainer}>
-                      <Text style={styles.featuredEventDateText}>
-                        {item.date}
-                      </Text>
-
-                      <Text style={styles.featuredEventDateText}>
-                        {item.date1}
-                      </Text>
-
-                      <Text style={styles.featuredEventDateText}>
-                        {item.place}
-                      </Text>
-                    </View>
-
-                    <Text style={styles.eventTitleTextStyle}>
-                      {item.eventTitle}
-                    </Text>
-
-                    <Text
-                      style={styles.eventDescriptionTextStyle}
-                      numberOfLines={2}>
-                      {item.eventDescription}
-                    </Text>
-
-                    <Text style={styles.postedByTextStyle}>
-                      {item.postedBy}
-                    </Text>
-
-                    <View style={styles.eventBidContainer}>
-                      <View style={styles.eventCostContainer}>
-                        <Text style={styles.constTextStyle}>
-                          Free: {item.cost}
-                        </Text>
-                      </View>
-
-                      <View style={styles.eventBidAmountContainer}>
-                        <Text style={styles.bidTextStyle}>
-                          Early Bid: {item.earlyBid}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.eventTypeContainer}>
-                      <Text style={styles.eventTypeText}>{item.eventType}</Text>
-                    </View>
-
-                    <View style={styles.daysLeftContainer}>
-                      <Text style={styles.eventDaysLeftText}>
-                        {item.daysLeft}
-                      </Text>
-                    </View>
-
-                    <View style={styles.eventTimeContainer}>
-                      <Text style={styles.eventTimeText}>{item.eventTime}</Text>
-                    </View>
-
-                    <View style={styles.eventWorthContainer}>
-                      <Text style={styles.eventWorthText}>
-                        {item.eventWorth}
-                      </Text>
-                    </View>
-
-                    <View style={styles.eventRoutineContainer}>
-                      <Text style={styles.eventRoutineText}>
-                        {item.eventRoutine}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-
-              <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>View All Event</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ImageBackground
-              source={splash_image}
-              style={styles.eventCategoryContainer1}>
-              <Text style={styles.featuredEventText1}>Top Selling Events</Text>
-              {this.state.featureEventList.map(item => {
-                return (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    style={styles.featuredEventBox}>
-                    <Image
-                      source={item.image}
-                      resizeMode="cover"
-                      style={styles.featuredImageStyle}
-                    />
-
-                    <View style={styles.eventDateAndPlaceContainer}>
-                      <Text style={styles.featuredEventDateText}>
-                        {item.date}
-                      </Text>
-
-                      <Text style={styles.featuredEventDateText}>
-                        {item.date1}
-                      </Text>
-
-                      <Text style={styles.featuredEventDateText}>
-                        {item.place}
-                      </Text>
-                    </View>
-
-                    <Text style={styles.eventTitleTextStyle1}>
-                      {item.eventTitle}
-                    </Text>
-
-                    <Text
-                      style={styles.eventDescriptionTextStyle}
-                      numberOfLines={2}>
-                      {item.eventDescription}
-                    </Text>
-
-                    <Text style={styles.postedByTextStyle}>
-                      {item.postedBy}
-                    </Text>
-
-                    <View style={styles.eventBidContainer}>
-                      <View style={styles.eventCostContainer}>
-                        <Text style={styles.constTextStyle}>
-                          Free: {item.cost}
-                        </Text>
-                      </View>
-
-                      <View style={styles.eventBidAmountContainer}>
-                        <Text style={styles.bidTextStyle}>
-                          Early Bid: {item.earlyBid}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.eventTypeContainer}>
-                      <Text style={styles.eventTypeText}>{item.eventType}</Text>
-                    </View>
-
-                    <View style={styles.daysLeftContainer}>
-                      <Text style={styles.eventDaysLeftText}>
-                        {item.daysLeft}
-                      </Text>
-                    </View>
-
-                    <View style={styles.eventTimeContainer}>
-                      <Text style={styles.eventTimeText}>{item.eventTime}</Text>
-                    </View>
-
-                    <View style={styles.eventWorthContainer}>
-                      <Text style={styles.eventWorthText}>
-                        {item.eventWorth}
-                      </Text>
-                    </View>
-
-                    <View style={styles.eventRoutineContainer}>
-                      <Text style={styles.eventRoutineText}>
-                        {item.eventRoutine}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-
-              <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>View All Event</Text>
-              </TouchableOpacity>
-            </ImageBackground>
-
-            <Text style={styles.featuredEventText}>Explore Best Cities</Text>
-            <ImageBackground
-              source={splash_image}
-              style={styles.eventCategoryContainer}>
-              <FlatGrid
-                itemDimension={134}
-                data={this.state.eventCategoryList}
-                // style={styles.gridView}
-                spacing={2}
-                renderItem={({item}) => (
-                  <TouchableOpacity style={styles.categoryContainer}>
-                    <ImageBackground
-                      source={item.image}
-                      resizeMode="cover"
-                      style={styles.categoryImageStyle}>
-                      <Text style={styles.categoryTitleText}>{item.title}</Text>
-                    </ImageBackground>
-                  </TouchableOpacity>
-                )}
-              />
-            </ImageBackground>
-          </View>
-        </ScrollView>
-
-        <FooterComponent nav={this.props.navigation} />
-      </SafeAreaView>
-    );
+          <FooterComponent nav={this.props.navigation} />
+        </SafeAreaView>
+      );
+    }
   }
 }
 
@@ -530,7 +729,7 @@ const styles = StyleSheet.create({
     aspectRatio: 683 / 284,
   },
   searchContainer: {
-    height: hp(10),
+    height: hp(8),
     borderWidth: 4,
     borderColor: '#00192f',
     borderRadius: wp(4),
@@ -550,6 +749,14 @@ const styles = StyleSheet.create({
     width: hp(3),
     aspectRatio: 1 / 1,
   },
+  loginFormTextInput: {
+    fontSize: wp(3.5),
+    flex: 1,
+    // marginLeft: wp(4),
+    // backgroundColor: '#334759',
+    borderRadius: wp(1),
+    color: '#000',
+  },
   searchButtonContainer: {
     flexDirection: 'row',
     height: hp(6),
@@ -558,6 +765,8 @@ const styles = StyleSheet.create({
     borderRadius: wp(3),
     backgroundColor: '#00192f',
     elevation: 30,
+    // marginVertical: hp(4),
+    marginHorizontal: wp(4),
   },
   searchIconStyle: {
     width: hp(2),
@@ -577,7 +786,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#00192f',
     textAlign: 'center',
-    marginVertical: hp(1),
+    marginVertical: hp(4),
   },
   gridView: {
     // marginTop: 10,
@@ -643,7 +852,7 @@ const styles = StyleSheet.create({
   },
   eventDescriptionTextStyle: {
     fontSize: wp(3.2),
-    color: '#ccc',
+    color: '#838383',
     marginHorizontal: wp(2),
   },
   postedByTextStyle: {
@@ -698,6 +907,9 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   daysLeftContainer: {
+    width: wp(20),
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'absolute',
     left: wp(73),
     top: hp(2),
@@ -712,6 +924,9 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(1),
   },
   eventTimeContainer: {
+    width: wp(20),
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'absolute',
     left: wp(73),
     top: hp(4),
