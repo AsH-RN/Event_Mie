@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable react/self-closing-comp */
 /* eslint-disable prettier/prettier */
 import React, {Component} from 'react';
 import {
@@ -17,6 +16,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
+import RNRestart from 'react-native-restart';
 
 // Component
 import ProcessingLoader from '../component/ProcessingLoader';
@@ -25,8 +25,8 @@ import HeaderComponent from '../component/HeaderComponent';
 
 // Icon
 import ic_login from '../assets/icon/ic_login.png';
-import facebook from '../assets/icon/facebook.png';
-import google from '../assets/icon/google.png';
+// import facebook from '../assets/icon/facebook.png';
+// import google from '../assets/icon/google.png';
 
 // Image
 import splash_image from '../assets/image/spalsh_image.png';
@@ -46,6 +46,7 @@ export default class LoginScreen extends Component {
     this.state = {
       email: '',
       password: '',
+      hidePassword: true,
       showProcessingLoader: false,
     };
   }
@@ -56,6 +57,10 @@ export default class LoginScreen extends Component {
 
   handlePasswordChange = password => {
     this.setState({password});
+  };
+
+  setPasswordVisibility = () => {
+    this.setState({hidePassword: !this.state.hidePassword});
   };
 
   handleRegister = async () => {
@@ -110,9 +115,11 @@ export default class LoginScreen extends Component {
           console.log(response.data.id);
 
           await storeData(async_keys.userId, token);
-          await storeData(async_keys.userInfo, response.data.id);
+          await storeData(async_keys.userInfo, response.data.role_id);
 
-          this.props.navigation.push('Home');
+          RNRestart.Restart();
+          // this.forceUpdate();
+          // this.props.navigation.navigate('LoggedOut');
         } else {
           const {username} = errors;
 
@@ -158,11 +165,26 @@ export default class LoginScreen extends Component {
               placeholder="Password"
               placeholderTextColor="#c4c3cb"
               keyboardType="default"
+              secureTextEntry={this.state.hidePassword}
               underlineColorAndroid="transparent"
               value={this.state.password}
               onChangeText={this.handlePasswordChange}
               InputProps={{disableUnderline: true}}
             />
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.touchAbleButton}
+              onPress={this.setPasswordVisibility}>
+              <Image
+                source={
+                  this.state.hidePassword
+                    ? require('../assets/icon/ic_hide.png')
+                    : require('../assets/icon/ic_show.png')
+                }
+                style={styles.buttonImage}
+              />
+            </TouchableOpacity>
           </View>
 
           <TouchableOpacity
@@ -190,9 +212,9 @@ export default class LoginScreen extends Component {
             </Text>
           </View>
 
-          <View style={styles.lineContainer}></View>
+          {/* <View style={styles.lineContainer}></View> */}
 
-          <View style={styles.socialMediaContainer}>
+          {/* <View style={styles.socialMediaContainer}>
             <Text style={styles.socialTextStyle}>Or Continue with</Text>
             <View style={styles.socialLoginContainer}>
               <View style={styles.facebookViewContainer}>
@@ -215,7 +237,7 @@ export default class LoginScreen extends Component {
                 <Text style={styles.facebookTextStyle}>Google</Text>
               </View>
             </View>
-          </View>
+          </View> */}
         </View>
 
         {this.state.showProcessingLoader && <ProcessingLoader />}
@@ -256,6 +278,18 @@ const styles = StyleSheet.create({
     // marginLeft: wp(4),
     backgroundColor: '#334759',
     borderRadius: wp(1),
+  },
+  touchAbleButton: {
+    position: 'absolute',
+    right: 10,
+    height: hp(6),
+    width: wp(7),
+    padding: 2,
+  },
+  buttonImage: {
+    resizeMode: 'contain',
+    height: '100%',
+    width: '100%',
   },
   buttonContainer: {
     flexDirection: 'row',

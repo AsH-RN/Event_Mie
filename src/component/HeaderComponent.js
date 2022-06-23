@@ -21,7 +21,7 @@ const HeaderComponent = props => {
   const {nav, title, navAction} = props;
 
   const toggleDrawer = () => {
-    // nav.openDrawer();
+    nav.openDrawer();
   };
 
   const handleBack = async () => {

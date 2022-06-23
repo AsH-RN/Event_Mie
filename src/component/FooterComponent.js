@@ -177,7 +177,7 @@ export default class FooterComponent extends PureComponent {
           </View>
         </TouchableHighlight>
 
-        {this.state.checkUserActivity === null ? (
+        {/* {this.state.checkUserActivity === null ? (
           <TouchableHighlight
             underlayColor="transparent"
             onPress={this.handleLogin}
@@ -217,9 +217,9 @@ export default class FooterComponent extends PureComponent {
               </Text>
             </View>
           </TouchableHighlight>
-        )}
+        )} */}
 
-        <TouchableHighlight
+        {/* <TouchableHighlight
           underlayColor="transparent"
           onPress={this.handleScanTicket}
           style={tab === 'ScanTicket' ? selectedTabStyle : styles.footerMenu}>
@@ -234,7 +234,7 @@ export default class FooterComponent extends PureComponent {
               Scan Ticket
             </Text>
           </View>
-        </TouchableHighlight>
+        </TouchableHighlight> */}
       </SafeAreaView>
     );
   }

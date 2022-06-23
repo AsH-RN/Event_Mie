@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, {Component} from 'react';
 import {createAppContainer} from 'react-navigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -9,11 +10,15 @@ import SplashScreen from './src/screen/SplashScreen';
 import {createRootNavigator} from './src/routes/Routes';
 import {nsSetTopLevelNavigator} from './src/routes/NavigationService';
 
+// User Preference
+import {async_keys, getData} from './src/api/UserPreference';
+
 export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isLoading: true,
+      checkScanning: null,
     };
   }
 
@@ -23,8 +28,9 @@ export default class App extends Component {
   }
 
   initialSetup = async () => {
+    const organizer = await getData(async_keys.userInfo);
     try {
-      this.setState({isLoading: false});
+      this.setState({checkScanning: organizer, isLoading: false});
     } catch (error) {
       console.log(error.message);
     }
@@ -35,12 +41,12 @@ export default class App extends Component {
   };
 
   render() {
-    const {isLoading} = this.state;
+    const {isLoading, checkScanning} = this.state;
     if (isLoading) {
       return <SplashScreen />;
     }
 
-    const RootNavigator = createRootNavigator();
+    const RootNavigator = createRootNavigator(checkScanning);
     const AppContainer = createAppContainer(RootNavigator);
     return (
       <SafeAreaProvider>

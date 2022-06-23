@@ -361,7 +361,51 @@ export default class CheckOutScreen extends Component {
   handleSeatBookingCheckout = async () => {
     const token = await getData(async_keys.userId);
 
-    const {tickets, userId, ticketList} = this.state;
+    const {tickets, userId, ticketList, seatTicketValue} = this.state;
+    // "seat_id_72 : [
+    //   "36",
+    //   "37"
+    // ]
+    // seat_id_73:  [
+    //   "124"
+    // ]
+    let selectedTicketList = [];
+    let selectedSeats = [];
+    let existTickets = [];
+    for (let index = 0; index < tickets.length; index++) {
+      const ticketID = tickets[index].id;
+      // ticketId
+      const selectedSeatCount = seatTicketValue.filter(
+        st => st.ticketId == ticketID,
+      ).length;
+      if (selectedSeatCount > 0) {
+        selectedTicketList.push({
+          ticketID: ticketID,
+          value: selectedSeatCount,
+        });
+      }
+    }
+    const seatArrangement = [];
+    for (let index = 0; index < selectedTicketList.length; index++) {
+      const ticketId = selectedTicketList[index].ticketID;
+      const selectedSeatNumbers = seatTicketValue.filter(
+        st => st.ticketId == ticketId,
+      );
+      var seats = selectedSeatNumbers.map(s => s.seatId);
+      // for (let j = 0; j < selectedSeatNumbers.length; j++) {
+      //   const element = selectedSeatNumbers[j];
+      //   seats.push(element.seatId);
+      // }
+      const cname = 'seat_id_' + ticketId;
+      seatArrangement.push({
+        [cname]: seats,
+      });
+    }
+    console.log(seatArrangement);
+    // let baseQuantity = seatTicketValue.filter(
+    //   obj => obj.ticketId === seatTicketValue.ticketId,
+    // ).length;
+    console.log(seatTicketValue);
 
     console.log(tickets);
     let ticketID = [];
@@ -376,14 +420,14 @@ export default class CheckOutScreen extends Component {
 
     const {endTime, startTime, eventId, finalDate} = this.eventInfo;
 
-    console.log(endTime, startTime, eventId, finalDate);
+    // console.log(endTime, startTime, eventId, finalDate);
 
     try {
       // starting processing loader
       // this.setState({showProcessingLoader: true});
 
       // preparing params
-      const params = {
+      const allData = {
         event_id: eventId,
         booking_date: endTime,
         booking_end_date: '',
@@ -401,6 +445,9 @@ export default class CheckOutScreen extends Component {
         is_subscribe: 1,
         c_fields: [],
       };
+
+      const params = {...allData, seatArrangement};
+      console.log(params);
 
       const axios = require('axios');
 
@@ -468,45 +515,44 @@ export default class CheckOutScreen extends Component {
     try {
       const {ticketList} = this.state;
       const checkId = item.id;
-      
-        if (ticketList.length < 5) {
-          // setting tickets value
-          const ticketId = seat.id;
-          var elementPos = ticketList
-            .map(function (x) {
-              return x.ticketId;
-            })
-            .indexOf(ticketId);
-          console.log(elementPos);
-          if (elementPos !== -1) {
-            // if (seat.is_seat_selected === 'Yes') {
-            Object.assign(seat, {is_seat_selected: 'No'});
-            // } else {
-            //   Object.assign(seat, {is_seat_selected: 'Yes'});
-            // }
-            ticketList.splice(elementPos, 1);
-            // ticketList.push({ticketId, i});
-            console.log(ticketList);
-          } else {
-            console.log('Else');
-            // if (seat.is_seat_selected === 'Yes') {
-            //   Object.assign(seat, {is_seat_selected: 'No'});
-            // } else {
-            Object.assign(seat, {is_seat_selected: 'Yes'});
-            // }
-            console.log(seat.is_seat_selected);
-            ticketList.push({ticketId, i});
-            console.log(ticketList);
-          }
 
-          this.setState({ticketList});
-          // console.log(ticketList);
+      if (ticketList.length < 5) {
+        // setting tickets value
+        const ticketId = seat.id;
+        var elementPos = ticketList
+          .map(function (x) {
+            return x.ticketId;
+          })
+          .indexOf(ticketId);
+        console.log(elementPos);
+        if (elementPos !== -1) {
+          // if (seat.is_seat_selected === 'Yes') {
+          Object.assign(seat, {is_seat_selected: 'No'});
+          // } else {
+          //   Object.assign(seat, {is_seat_selected: 'Yes'});
+          // }
+          ticketList.splice(elementPos, 1);
+          // ticketList.push({ticketId, i});
+          console.log(ticketList);
         } else {
-          
-          Alert.alert('Alert', 'Max Seats Limit Reached.')[
-            {text: 'OK', onPress: () => console.log('OK Pressed')}
-          ];
+          console.log('Else');
+          // if (seat.is_seat_selected === 'Yes') {
+          //   Object.assign(seat, {is_seat_selected: 'No'});
+          // } else {
+          Object.assign(seat, {is_seat_selected: 'Yes'});
+          // }
+          console.log(seat.is_seat_selected);
+          ticketList.push({ticketId, i});
+          console.log(ticketList);
         }
+
+        this.setState({ticketList});
+        // console.log(ticketList);
+      } else {
+        Alert.alert('Alert', 'Max Seats Limit Reached.')[
+          {text: 'OK', onPress: () => console.log('OK Pressed')}
+        ];
+      }
     } catch (error) {
       console.log(error.message);
     }
