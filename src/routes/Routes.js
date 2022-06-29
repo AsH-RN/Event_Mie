@@ -27,6 +27,7 @@ import CategoryScreen from '../screen/CategoryScreen';
 
 // Scan Ticket Screen
 import ScanTicketScreen from '../screen/ScanTicketScreen';
+import ScanOutScreen from '../screen/ScanOutScreen';
 
 // Profile Screen
 import ProfileScreen from '../screen/ProfileScreen';
@@ -161,6 +162,7 @@ const HomeNavigator = createStackNavigator(
     EventList: EventListScreen,
     ViewEvent: ViewEventScreen,
     ScanTicket: ScanTicketScreen,
+    ScanOut: ScanOutScreen,
     Category: CategoryScreen,
     Login: LoginScreen,
     SignUp: SignUpScreen,
@@ -233,8 +235,11 @@ const LoggedOutNavigator1 = createDrawerNavigator(
     Profile: {
       screen: ProfileNavigator,
     },
-    'Scan Ticket ': {
+    'Check In': {
       screen: ScanTicketScreen,
+    },
+    'Check Out': {
+      screen: ScanOutScreen,
     },
     Logout: {
       screen: 'No Screen',

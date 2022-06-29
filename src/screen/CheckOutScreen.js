@@ -37,6 +37,7 @@ import {showToast} from '../component/CustomToast';
 
 // User Preference
 import {async_keys, getData} from '../api/UserPreference';
+import {BASE_URL} from '../api/ApiInfo';
 
 export default class CheckOutScreen extends Component {
   constructor(props) {
@@ -86,6 +87,43 @@ export default class CheckOutScreen extends Component {
       //     console.log(seat.is_seat_selected);
       //   });
       // });
+      this.getCustomField();
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  getCustomField = async () => {
+    const {eventId} = this.eventInfo;
+
+    console.log(eventId);
+
+    // getting token from AsyncStorage
+    const token = await getData(async_keys.userId);
+
+    const axios = require('axios');
+
+    try {
+      // preparing params
+      const params = {event_id: eventId};
+
+      // creating custom header
+      let axiosConfig = {
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      };
+
+      // calling api
+      await axios
+        .post(BASE_URL + 'event/get-custom-fields', params, axiosConfig)
+
+        // processing response
+        .then(response => {
+          let newResponse = response.data;
+
+          console.log(newResponse);
+        });
     } catch (error) {
       console.log(error.message);
     }

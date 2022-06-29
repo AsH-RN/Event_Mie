@@ -45,6 +45,7 @@ import {BASE_URL, makeRequest} from '../api/ApiInfo';
 
 // User Preference
 import {async_keys, getData} from '../api/UserPreference';
+import {showToast} from '../component/CustomToast';
 
 export default class ProfileScreen extends Component {
   constructor(props) {
@@ -260,6 +261,8 @@ export default class ProfileScreen extends Component {
           // starting processing loader
           this.setState({showProcessingLoader: false});
 
+          showToast('Profile details updated successfully.');
+
           this.forceUpdate();
         }
       }
@@ -435,9 +438,9 @@ export default class ProfileScreen extends Component {
 
             <Text style={styles.hostText}>Want to create & host events ?</Text>
 
-            <TouchableOpacity style={styles.hostButtonContainer}>
+            {/* <TouchableOpacity style={styles.hostButtonContainer}>
               <Text style={styles.saveProfileText}>Become Organizer</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </ScrollView>
 

@@ -32,7 +32,11 @@ import ic_reset from '../assets/icon/ic_reset.png';
 import header_image from '../assets/image/header_image.png';
 // import featured_event_image from '../assets/image/featured_event_image.jpg';
 
+// APi Info
 import {BASE_URL} from '../api/ApiInfo';
+
+// User Preference
+import {async_keys, getData} from '../api/UserPreference';
 
 export default class EventListScreen extends Component {
   constructor(props) {
@@ -112,6 +116,8 @@ export default class EventListScreen extends Component {
 
     // fetching navigation props
     this.searchData = this.props.navigation.getParam('searchData', null);
+    this.searchInfo = this.props.navigation.getParam('searchInfo', null);
+    console.log(this.searchData);
   }
 
   componentDidMount() {
@@ -130,9 +136,89 @@ export default class EventListScreen extends Component {
     } = this.state;
 
     try {
+      if (this.searchData === null) {
+        await axios
+          .post(BASE_URL + 'events')
+
+          // processing response
+          .then(response => {
+            let newResponse = response;
+
+            console.log(newResponse.data);
+
+            if (newResponse) {
+              const {success} = newResponse.data;
+
+              if (success === true) {
+                // console.log(newResponse.data.events.data);
+                this.setState({featureEventList: newResponse.data.events.data});
+              }
+            }
+          });
+      } else {
+        // preparing params
+        const params = {
+          category: this.searchData.slug || selectedCategory,
+          search: this.searchInfo.search || searchText,
+          start_date: dateFilter,
+          end_date: dateFilter,
+          price: selectedPrice,
+          country: selectedCountry,
+          city: '',
+        };
+
+        // console.log(params.start_date);
+
+        // console.log(params.search);
+
+        await axios
+          .post(BASE_URL + 'events', params)
+
+          // processing response
+          .then(response => {
+            let newResponse = response;
+
+            console.log(newResponse);
+
+            if (newResponse) {
+              const {success} = newResponse.data;
+
+              if (success === true) {
+                // console.log(newResponse.data.events.data);
+                this.setState({featureEventList: newResponse.data.events.data});
+              }
+            }
+          });
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  filterData = async () => {
+    const axios = require('axios');
+
+    // getting token from AsyncStorage
+    const token = await getData(async_keys.userId);
+
+    const {
+      searchText,
+      selectedCategory,
+      dateFilter,
+      selectedPrice,
+      selectedCountry,
+    } = this.state;
+
+    try {
+      let axiosConfig = {
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      };
+
       // preparing params
       const params = {
-        category: this.searchData.slug || selectedCategory,
+        category: selectedCategory,
         search: searchText,
         start_date: dateFilter,
         end_date: dateFilter,
@@ -141,11 +227,12 @@ export default class EventListScreen extends Component {
         city: '',
       };
 
-      console.log(params.start_date);
+      // console.log(params.start_date);
 
-      console.log(params.search);
+      console.log(params);
+
       await axios
-        .get(BASE_URL + 'events', params)
+        .post(BASE_URL + 'events', params, axiosConfig)
 
         // processing response
         .then(response => {
@@ -170,16 +257,20 @@ export default class EventListScreen extends Component {
   handleSearchChange = searchText => {
     this.setState({searchText});
 
-    this.fetchSearchData();
+    this.filterData();
   };
 
   handleSelectedCity = async value => {
-    await this.setState({
-      selectedCategory: value,
-      isEnabled: true,
-    });
+    this.setState(
+      {
+        selectedCategory: value,
+      },
+      () => {
+        console.log(this.state.selectedCategory);
+      },
+    );
 
-    this.fetchSearchData();
+    this.filterData();
   };
 
   handleSelectedPrice = async value => {
@@ -188,7 +279,7 @@ export default class EventListScreen extends Component {
       isEnabled: true,
     });
 
-    this.fetchSearchData();
+    this.filterData();
   };
 
   handleSelectedCountry = async value => {
@@ -197,7 +288,7 @@ export default class EventListScreen extends Component {
       isEnabled: true,
     });
 
-    this.fetchSearchData();
+    this.filterData();
   };
 
   handleDateChange = dateFilter => {
@@ -210,7 +301,7 @@ export default class EventListScreen extends Component {
 
   handleHideDatePicker = () => {
     this.setState({isDatePickerVisible: false});
-    this.fetchSearchData();
+    this.filterData();
   };
 
   handleConfirm = date => {

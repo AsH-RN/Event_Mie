@@ -264,7 +264,7 @@ export default class ScanTicketScreen extends Component {
     if (this.state.showQR === 1) {
       return (
         <SafeAreaView style={styles.container}>
-          <HeaderComponent title="Check In" nav={this.props.navigation} />
+          <HeaderComponent title="Scan Ticket" nav={this.props.navigation} />
 
           <View style={styles.homeContainer}>
             <ImageBackground
@@ -320,8 +320,8 @@ export default class ScanTicketScreen extends Component {
 
             <TouchableOpacity
               style={styles.buttonContainer}
-              onPress={this.handleCheckedIn}>
-              <Text style={styles.buttonText}>Checked In</Text>
+              onPress={this.handleCheckedOut}>
+              <Text style={styles.buttonText}>Checked Out</Text>
             </TouchableOpacity>
           </View>
 
@@ -333,7 +333,7 @@ export default class ScanTicketScreen extends Component {
     } else {
       return (
         <SafeAreaView style={styles.container}>
-          <HeaderComponent title="Scan Ticket" nav={this.props.navigation} />
+          <HeaderComponent title="Check Out" nav={this.props.navigation} />
 
           <View style={styles.homeContainer}>
             <ImageBackground
@@ -465,14 +465,13 @@ export default class ScanTicketScreen extends Component {
                 resizeMode="cover"
                 style={styles.categoryIconStyle}
               />
-  
               <Text style={styles.cameraTextStyle}>Camera not detected!</Text>
             </View> */}
 
             <TouchableOpacity
               style={styles.buttonContainer}
-              onPress={this.handleCheckedIn}>
-              <Text style={styles.buttonText}>Checked In</Text>
+              onPress={this.handleCheckedOut}>
+              <Text style={styles.buttonText}>Checked Out</Text>
             </TouchableOpacity>
           </View>
 
