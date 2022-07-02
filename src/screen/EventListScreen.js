@@ -117,82 +117,141 @@ export default class EventListScreen extends Component {
     // fetching navigation props
     this.searchData = this.props.navigation.getParam('searchData', null);
     this.searchInfo = this.props.navigation.getParam('searchInfo', null);
-    console.log(this.searchData);
+    // console.log(this.searchData.slug + ' ' + 'here search data');
+    console.log(this.searchInfo + ' ' + 'here search info');
   }
 
   componentDidMount() {
-    this.fetchSearchData();
+    if (this.searchInfo !== null) {
+      this.checkSearchData();
+    } else if (this.searchData !== null) {
+      this.checkSearchData1();
+    } else {
+      this.fetchSearchData();
+    }
   }
 
   fetchSearchData = async () => {
     const axios = require('axios');
 
-    const {
-      searchText,
-      selectedCategory,
-      dateFilter,
-      selectedPrice,
-      selectedCountry,
-    } = this.state;
-
     try {
-      if (this.searchData === null) {
-        await axios
-          .post(BASE_URL + 'events')
+      await axios
+        .post(BASE_URL + 'events')
 
-          // processing response
-          .then(response => {
-            let newResponse = response;
+        // processing response
+        .then(response => {
+          let newResponse = response;
 
-            console.log(newResponse.data);
+          console.log(newResponse.data);
 
-            if (newResponse) {
-              const {success} = newResponse.data;
+          if (newResponse) {
+            const {success} = newResponse.data;
 
-              if (success === true) {
-                // console.log(newResponse.data.events.data);
-                this.setState({featureEventList: newResponse.data.events.data});
-              }
+            if (success === true) {
+              // console.log(newResponse.data.events.data);
+              this.setState({featureEventList: newResponse.data.events.data});
             }
-          });
-      } else {
-        // preparing params
-        const params = {
-          category: this.searchData.slug || selectedCategory,
-          search: this.searchInfo.search || searchText,
-          start_date: dateFilter,
-          end_date: dateFilter,
-          price: selectedPrice,
-          country: selectedCountry,
-          city: '',
-        };
-
-        // console.log(params.start_date);
-
-        // console.log(params.search);
-
-        await axios
-          .post(BASE_URL + 'events', params)
-
-          // processing response
-          .then(response => {
-            let newResponse = response;
-
-            console.log(newResponse);
-
-            if (newResponse) {
-              const {success} = newResponse.data;
-
-              if (success === true) {
-                // console.log(newResponse.data.events.data);
-                this.setState({featureEventList: newResponse.data.events.data});
-              }
-            }
-          });
-      }
+          }
+        });
     } catch (error) {
       console.log(error.message);
     }
+  };
+
+  checkSearchData = async () => {
+    this.setState({searchText: this.searchInfo.search});
+
+    const axios = require('axios');
+
+    const {
+      // searchText,
+      // selectedCategory,
+      // dateFilter,
+      // selectedPrice,
+      // selectedCountry,
+    } = this.state;
+
+    // preparing params
+    const params = {
+      // category: this.searchData.slug || selectedCategory || '',
+      search: this.searchInfo.search,
+      // start_date: dateFilter,
+      // end_date: dateFilter,
+      // price: selectedPrice,
+      // country: selectedCountry,
+      // city: '',
+    };
+
+    // console.log(params.start_date);
+
+    // console.log(params.search);
+
+    await axios
+      .post(BASE_URL + 'events', params)
+
+      // processing response
+      .then(response => {
+        let newResponse = response;
+
+        console.log(newResponse);
+
+        if (newResponse) {
+          const {success} = newResponse.data;
+
+          if (success === true) {
+            // console.log(newResponse.data.events.data);
+            this.setState({featureEventList: newResponse.data.events.data});
+          }
+        }
+      });
+  };
+
+  checkSearchData1 = async () => {
+    this.setState({selectedCategory: this.searchData.slug});
+
+    const axios = require('axios');
+
+    const {
+      // searchText,
+      // selectedCategory,
+      // dateFilter,
+      // selectedPrice,
+      // selectedCountry,
+    } = this.state;
+
+    // preparing params
+    const params = {
+      category: this.searchData.slug,
+      // search: this.searchInfo.search || searchText,
+      // start_date: dateFilter,
+      // end_date: dateFilter,
+      // price: selectedPrice,
+      // country: selectedCountry,
+      // city: '',
+    };
+
+    // console.log(params.start_date);
+
+    // console.log(params.search);
+
+    await axios
+      .post(BASE_URL + 'events', params)
+
+      // processing response
+      .then(response => {
+        let newResponse = response;
+
+        console.log(newResponse);
+
+        if (newResponse) {
+          const {success} = newResponse.data;
+
+          if (success === true) {
+            // console.log(newResponse.data.events.data);
+            this.setState({featureEventList: newResponse.data.events.data});
+          }
+        }
+      });
   };
 
   filterData = async () => {
@@ -261,14 +320,9 @@ export default class EventListScreen extends Component {
   };
 
   handleSelectedCity = async value => {
-    this.setState(
-      {
-        selectedCategory: value,
-      },
-      () => {
-        console.log(this.state.selectedCategory);
-      },
-    );
+    this.setState({
+      selectedCategory: value,
+    });
 
     this.filterData();
   };
@@ -325,6 +379,11 @@ export default class EventListScreen extends Component {
     this.forceUpdate();
   };
 
+  handleChangeToCategory = () => {
+    this.searchData = null;
+    this.forceUpdate();
+  };
+
   itemSeparator = () => <View style={styles.separator} />;
 
   render() {
@@ -371,26 +430,38 @@ export default class EventListScreen extends Component {
 
             <Text style={styles.textInputText}>Category</Text>
             <View style={styles.inputContainer}>
-              <RNPickerSelect
-                onValueChange={this.handleSelectedCity}
-                items={[
-                  {label: 'All', value: 'All'},
-                  {label: 'Business & Seminars', value: 'Business & Seminars'},
-                  {label: 'Yoga & Health', value: 'Yoga & Health'},
-                  {label: 'Education & Classes', value: 'Education & Classes'},
-                  {label: 'Sports & Fitness', value: 'Sports & Fitness'},
-                  {label: 'Music & Concerts', value: 'Music & Concerts'},
-                  {
-                    label: 'Charity & Non-profit',
-                    value: 'Charity & Non-profit',
-                  },
-                  {label: 'Food & Drink', value: 'Food & Drink'},
-                  {label: 'Travel & Trekking', value: 'Travel & Trekking'},
-                  {label: 'Science & Tech', value: 'Science & Tech'},
-                ]}
-                style={pickerStyle}
-                useNativeAndroidPickerStyle={false}
-              />
+              {this.searchData === null ? (
+                <RNPickerSelect
+                  onValueChange={this.handleSelectedCity}
+                  items={[
+                    {label: 'All', value: 'All'},
+                    {
+                      label: 'Business & Seminars',
+                      value: 'Business & Seminars',
+                    },
+                    {label: 'Yoga & Health', value: 'Yoga & Health'},
+                    {
+                      label: 'Education & Classes',
+                      value: 'Education & Classes',
+                    },
+                    {label: 'Sports & Fitness', value: 'Sports & Fitness'},
+                    {label: 'Music & Concerts', value: 'Music & Concerts'},
+                    {
+                      label: 'Charity & Non-profit',
+                      value: 'Charity & Non-profit',
+                    },
+                    {label: 'Food & Drink', value: 'Food & Drink'},
+                    {label: 'Travel & Trekking', value: 'Travel & Trekking'},
+                    {label: 'Science & Tech', value: 'Science & Tech'},
+                  ]}
+                  style={pickerStyle}
+                  useNativeAndroidPickerStyle={false}
+                />
+              ) : (
+                <Text onPress={this.handleChangeToCategory}>
+                  {this.state.selectedCategory}
+                </Text>
+              )}
             </View>
 
             <Text style={styles.textInputText}>Date</Text>

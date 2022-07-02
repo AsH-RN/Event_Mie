@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable quotes */
+/* eslint-disable prettier/prettier */
 import React, {Component} from 'react';
 import {
   View,
@@ -19,6 +21,8 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import {FlatGrid} from 'react-native-super-grid';
 import RenderHtml from 'react-native-render-html';
+import Share from 'react-native-share';
+import RNFetchBlob from 'rn-fetch-blob';
 
 // Component
 import CustomLoader from '../component/CustomLoader';
@@ -45,6 +49,10 @@ import splash_image from '../assets/image/spalsh_image.png';
 
 // API Info
 import {BASE_URL} from '../api/ApiInfo';
+
+// User Preference
+import {async_keys, getData} from '../api/UserPreference';
+import {showToast} from '../component/CustomToast';
 
 const width = Dimensions.get('window').width;
 
@@ -107,7 +115,7 @@ export default class ViewEventScreen extends Component {
             const {success} = newResponse.data;
 
             if (success === true) {
-              console.log(newResponse.data.data.currency);
+              console.log(newResponse.data.data);
 
               let datesArray = [];
               newResponse.data.data.repititive_schedule.map((item, id) =>
@@ -167,23 +175,15 @@ export default class ViewEventScreen extends Component {
   };
 
   handleGetTicket = async date => {
-    const {
-      title,
-      startDate,
-      endDate,
-      venue,
-      startTime,
-      endTime,
-      tickets,
-      eventId,
-      maxQuantity,
-      currency,
-    } = this.state;
+    // getting data from async storage
+    const organizer = await getData(async_keys.userInfo);
 
-    const finalDate = date.dates;
-    // console.log(date.dates);
-    this.props.navigation.navigate('Checkout', {
-      eventInfo: {
+    // console.log(organizer);
+
+    if (organizer === 3) {
+      showToast('Organizer cannot book ticket.');
+    } else {
+      const {
         title,
         startDate,
         endDate,
@@ -192,11 +192,28 @@ export default class ViewEventScreen extends Component {
         endTime,
         tickets,
         eventId,
-        finalDate,
         maxQuantity,
         currency,
-      },
-    });
+      } = this.state;
+
+      const finalDate = date.dates;
+      // console.log(date.dates);
+      this.props.navigation.navigate('Checkout', {
+        eventInfo: {
+          title,
+          startDate,
+          endDate,
+          venue,
+          startTime,
+          endTime,
+          tickets,
+          eventId,
+          finalDate,
+          maxQuantity,
+          currency,
+        },
+      });
+    }
   };
 
   handleGetSeatingTicket = async date => {
@@ -232,7 +249,45 @@ export default class ViewEventScreen extends Component {
 
   handleFacebook = async () => {
     try {
-      Linking.openURL('https://bookingqube.classiebit.com/');
+      // Linking.openURL('https://bookingqube.classiebit.com/');
+
+      const {posterImage, title, descriptionText} = this.state;
+
+      const htmlTagRegex = /<[^>]*>?/gm;
+      const description = descriptionText
+        .replace(htmlTagRegex, '')
+        .replace(/&nbsp;/gm, '');
+
+      const imageUrl = this.slugTitle.imageUrlPrefix + '/' + posterImage;
+
+      // console.log(imageUrl, title, description);
+
+      // Downloading Image for sharing
+      let imagePath = null;
+      RNFetchBlob.config({
+        fileCache: true,
+      })
+        .fetch('GET', imageUrl)
+        // the image is now downloaded to device's storage
+        .then(resp => {
+          // the image path you can use it directly with Image component
+          imagePath = resp.path();
+          return resp.readFile('base64');
+        })
+        .then(async base64Data => {
+          var base64Data = `data:image/png;base64,` + base64Data;
+          // here's base64 encoded image
+          await Share.open({
+            url: base64Data,
+            message: title,
+            // +
+            //   ' ' +
+            //   'https://www.sachbedhadak.in/front/Home/newsDetail/' +
+            //   this.state.link,
+          });
+          // remove the file from storage
+          // return fs.unlink(imagePath);
+        });
     } catch (error) {
       console.log(error.message);
     }
@@ -289,7 +344,7 @@ export default class ViewEventScreen extends Component {
 
     const source1 = {html: faq};
 
-    const imageUrl = 'https://devdemo.shrigenesis.com/events_app/storage/';
+    const imageUrl = this.slugTitle.imageUrlPrefix + '/';
 
     // const htmlTagRegex = /<[^>]*>?/gm;
     // const description = descriptionText
@@ -349,7 +404,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleTwitter}>
+                onPress={this.handleFacebook}>
                 <Image
                   source={ic_twitter}
                   resizeMode="cover"
@@ -359,7 +414,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleLinkedin}>
+                onPress={this.handleFacebook}>
                 <Image
                   source={ic_linkedin}
                   resizeMode="cover"
@@ -369,7 +424,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleWhatsApp}>
+                onPress={this.handleFacebook}>
                 <Image
                   source={ic_whatsapp}
                   resizeMode="cover"
@@ -379,7 +434,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleReddit}>
+                onPress={this.handleFacebook}>
                 <Image
                   source={ic_reddit}
                   resizeMode="cover"
@@ -389,7 +444,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleChain}>
+                onPress={this.handleFacebook}>
                 <Image
                   source={ic_chain}
                   resizeMode="cover"

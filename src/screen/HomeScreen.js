@@ -50,6 +50,7 @@ export default class HomeScreen extends Component {
       checkFilter: null,
       searchResponse: [],
       isLoading: true,
+      imageUrlPrefix: null,
     };
   }
 
@@ -73,7 +74,7 @@ export default class HomeScreen extends Component {
           if (newResponse) {
             const {success} = newResponse.data;
 
-            console.log(newResponse.data.data.categories);
+            console.log(newResponse.data.data.image_url_prefix);
 
             if (success === true) {
               this.setState({
@@ -82,6 +83,7 @@ export default class HomeScreen extends Component {
                 upcomingEventList: newResponse.data.data.upcomming_events,
                 topSellingEvents: newResponse.data.data.top_selling_events,
                 exploreCitiesList: newResponse.data.data.cities_events,
+                imageUrlPrefix: newResponse.data.data.image_url_prefix,
                 isLoading: false,
               });
             }
@@ -103,9 +105,13 @@ export default class HomeScreen extends Component {
   };
 
   handleEvent = item => {
+    const {imageUrlPrefix} = this.state;
+
     const slug = item.slug;
     // console.log(slug);
-    this.props.navigation.navigate('ViewEvent', {slugTitle: {slug}});
+    this.props.navigation.navigate('ViewEvent', {
+      slugTitle: {slug, imageUrlPrefix},
+    });
   };
 
   handleAllEvent = () => {

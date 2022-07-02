@@ -221,9 +221,9 @@ export default class LoginScreen extends Component {
             </Text>
           </View>
 
-          <View style={styles.lineContainer}></View>
+          {/* <View style={styles.lineContainer}></View> */}
 
-          <View style={styles.socialMediaContainer}>
+          {/* <View style={styles.socialMediaContainer}>
             <Text style={styles.socialTextStyle}>Or Continue with</Text>
             <View style={styles.socialLoginContainer}>
               <View style={styles.facebookViewContainer}>
@@ -246,7 +246,7 @@ export default class LoginScreen extends Component {
                 <Text style={styles.facebookTextStyle1}>Google</Text>
               </View>
             </View>
-          </View>
+          </View> */}
         </View>
 
         {this.state.showProcessingLoader && <ProcessingLoader />}

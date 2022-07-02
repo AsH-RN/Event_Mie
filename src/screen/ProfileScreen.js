@@ -62,6 +62,9 @@ export default class ProfileScreen extends Component {
       confirmPassword: '',
       isLoading: true,
       showProcessingLoader: false,
+      hideCurrentPassword: true,
+      hideNewPassword: true,
+      hideConfirmPassword: true,
     };
   }
 
@@ -140,6 +143,19 @@ export default class ProfileScreen extends Component {
 
   handleConfirmPasswordChange = confirmPassword => {
     this.setState({confirmPassword});
+  };
+
+  setCurrentPasswordVisibility = () => {
+    this.setState({hideCurrentPassword: !this.state.hideCurrentPassword});
+  };
+
+  setNewPasswordVisibility = () => {
+    this.setState({hideNewPassword: !this.state.hideNewPassword});
+  };
+
+  setConfirmPasswordVisibility = () => {
+    this.setState({hideConfirmPassword: !this.state.hideConfirmPassword});
+    console.log('here');
   };
 
   handlePermissions = async () => {
@@ -231,7 +247,7 @@ export default class ProfileScreen extends Component {
     try {
       // params.file = selectedFile;
       // starting processing loader
-      // this.setState({showProcessingLoader: true});
+      this.setState({showProcessingLoader: true});
 
       // preparing params
       let params = {
@@ -397,11 +413,26 @@ export default class ProfileScreen extends Component {
                 placeholder="Current Password"
                 placeholderTextColor="#000"
                 style={styles.loginFormTextInput}
+                secureTextEntry={this.state.hideCurrentPassword}
                 keyboardType="default"
                 underlineColorAndroid="transparent"
                 value={this.state.currentPassword}
                 onChangeText={this.handleCurrentPasswordChange}
               />
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.touchAbleButton}
+                onPress={this.setCurrentPasswordVisibility}>
+                <Image
+                  source={
+                    this.state.hideCurrentPassword
+                      ? require('../assets/icon/ic_hidden.png')
+                      : require('../assets/icon/ic_view.png')
+                  }
+                  style={styles.buttonImage}
+                />
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.textInputText}>New Password*</Text>
@@ -410,11 +441,26 @@ export default class ProfileScreen extends Component {
                 placeholder="New Password"
                 placeholderTextColor="#000"
                 style={styles.loginFormTextInput}
+                secureTextEntry={this.state.hideNewPassword}
                 keyboardType="default"
                 underlineColorAndroid="transparent"
                 value={this.state.newPassword}
                 onChangeText={this.handleNewPasswordChange}
               />
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.touchAbleButton}
+                onPress={this.setNewPasswordVisibility}>
+                <Image
+                  source={
+                    this.state.hideNewPassword
+                      ? require('../assets/icon/ic_hidden.png')
+                      : require('../assets/icon/ic_view.png')
+                  }
+                  style={styles.buttonImage}
+                />
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.textInputText}>Confirm Password*</Text>
@@ -423,11 +469,26 @@ export default class ProfileScreen extends Component {
                 placeholder="Confirm Password"
                 placeholderTextColor="#000"
                 style={styles.loginFormTextInput}
+                secureTextEntry={this.state.hideConfirmPassword}
                 keyboardType="default"
                 underlineColorAndroid="transparent"
                 value={this.state.confirmPassword}
                 onChangeText={this.handleConfirmPasswordChange}
               />
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.touchAbleButton}
+                onPress={this.setConfirmPasswordVisibility}>
+                <Image
+                  source={
+                    this.state.hideConfirmPassword
+                      ? require('../assets/icon/ic_hidden.png')
+                      : require('../assets/icon/ic_view.png')
+                  }
+                  style={styles.buttonImage}
+                />
+              </TouchableOpacity>
             </View>
 
             <TouchableOpacity
@@ -436,7 +497,7 @@ export default class ProfileScreen extends Component {
               <Text style={styles.saveProfileText}>Save Profile</Text>
             </TouchableOpacity>
 
-            <Text style={styles.hostText}>Want to create & host events ?</Text>
+            {/* <Text style={styles.hostText}>Want to create & host events ?</Text> */}
 
             {/* <TouchableOpacity style={styles.hostButtonContainer}>
               <Text style={styles.saveProfileText}>Become Organizer</Text>
@@ -579,5 +640,17 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
     borderRadius: wp(4),
     backgroundColor: '#00192f',
+  },
+  touchAbleButton: {
+    position: 'absolute',
+    right: 10,
+    height: hp(6),
+    width: wp(7),
+    padding: 2,
+  },
+  buttonImage: {
+    resizeMode: 'contain',
+    height: '100%',
+    width: '100%',
   },
 });

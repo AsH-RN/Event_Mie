@@ -27,6 +27,7 @@ import moment from 'moment';
 import CustomLoader from '../component/CustomLoader';
 import HeaderComponent from '../component/HeaderComponent';
 import FooterComponent from '../component/FooterComponent';
+import {showToast} from '../component/CustomToast';
 
 // Icon
 import ic_header_home_icon from '../assets/icon/ic_header_home_icon.png';
@@ -119,7 +120,11 @@ export default class MyBookingScreen extends Component {
           }
         });
     } catch (error) {
-      console.log(error.message);
+      console.log(error.response.data);
+
+      this.setState({isLoading: false});
+
+      showToast('Something went wrong.');
     }
   };
 
@@ -301,6 +306,58 @@ export default class MyBookingScreen extends Component {
 
     this.props.navigation.navigate('ViewEvent', {slugTitle: {slug}});
   };
+
+  // handleCancelTicket = async item => {
+  //   let booking_id = [];
+  //   item.attendees.map(i => {
+  //     booking_id.push(i.booking_id);
+  //   });
+  //   // getting token from AsyncStorage
+  //   const token = await getData(async_keys.userId);
+
+  //   // axios
+  //   const axios = require('axios');
+
+  //   // creating custom header
+  //   let axiosConfig = {
+  //     headers: {
+  //       Authorization: 'Bearer ' + token,
+  //       'Content-Type': 'text/plain',
+  //     },
+  //   };
+
+  //   try {
+  //     // calling api
+  //     await axios
+  //       ({
+  //         BASE_URL + 'cancel-booking',
+  //         method: "GET",
+  //         (data = {
+  //           event_id: item.event_id,
+  //           ticket_id: item.ticket_id,
+  //           booking_id: booking_id,
+  //         }),
+  //         axiosConfig,}
+  //       )
+  //       .then(response => {
+  //         let newResponse = response;
+
+  //         console.log(newResponse);
+
+  //         if (newResponse) {
+  //           const {status, message} = newResponse;
+
+  //           if (status === true) {
+  //             // console.log(newResponse.data.currency);
+
+  //             showToast(message);
+  //           }
+  //         }
+  //       });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   render() {
     const {isLoading} = this.state;
@@ -514,7 +571,9 @@ export default class MyBookingScreen extends Component {
 
                     <Text style={styles.eventTitleText}>Cancellation</Text>
                     {item.booking_cancel === 0 ? (
-                      <TouchableOpacity style={styles.cancellationContainer}>
+                      <TouchableOpacity
+                        style={styles.cancellationContainer}
+                        onPress={() => this.handleCancelTicket(item)}>
                         <Image
                           source={ic_cancellation}
                           resizeMode="cover"
@@ -542,67 +601,68 @@ export default class MyBookingScreen extends Component {
 
                     <View style={styles.lineContainer}></View>
 
-                    <Text style={styles.eventTitleText}>Actions</Text>
-                    <View style={styles.ticketActionContainer}>
-                      <TouchableOpacity style={styles.ticketContainer}>
+                    {item.payment_type === 'offline' ? null : (
+                      <Text style={styles.eventTitleText}>Actions</Text>
+                    )}
+                    {item.payment_type === 'offline' ? null : (
+                      <View style={styles.ticketActionContainer}>
+                        <TouchableOpacity style={styles.ticketContainer}>
+                          <Image
+                            source={ic_download}
+                            resizeMode="cover"
+                            style={styles.downloadIconStyle}
+                          />
+                          <Text style={styles.ticketText}>Ticket</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.ticketContainer}>
+                          <Image
+                            source={ic_download}
+                            resizeMode="cover"
+                            style={styles.downloadIconStyle}
+                          />
+                          <Text style={styles.ticketText}>Invoice</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+
+                    {item.payment_type === 'offline' ? null : (
+                      <TouchableOpacity
+                        style={styles.downloadBookingQRcodeContainer}>
                         <Image
                           source={ic_download}
                           resizeMode="cover"
                           style={styles.downloadIconStyle}
                         />
-                        <Text style={styles.ticketText}>Ticket</Text>
+                        <Text style={styles.ticketText}>
+                          Download Booking QRcode
+                        </Text>
                       </TouchableOpacity>
+                    )}
 
-                      <TouchableOpacity style={styles.ticketContainer}>
+                    {item.payment_type === 'offline' ? null : (
+                      <TouchableOpacity style={styles.checkInButtonContainer}>
                         <Image
-                          source={ic_download}
+                          source={ic_check_in}
                           resizeMode="cover"
                           style={styles.downloadIconStyle}
                         />
-                        <Text style={styles.ticketText}>Invoice</Text>
+                        <Text style={styles.ticketText}>Check in</Text>
                       </TouchableOpacity>
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.downloadBookingQRcodeContainer}>
-                      <Image
-                        source={ic_download}
-                        resizeMode="cover"
-                        style={styles.downloadIconStyle}
-                      />
-                      <Text style={styles.ticketText}>
-                        Download Booking QRcode
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.checkInButtonContainer}>
-                      <Image
-                        source={ic_check_in}
-                        resizeMode="cover"
-                        style={styles.downloadIconStyle}
-                      />
-                      <Text style={styles.ticketText}>Check in</Text>
-                    </TouchableOpacity>
+                    )}
 
                     <View style={styles.lineContainer}></View>
 
                     <Text style={styles.eventTitleText}>
                       Checkout Countdown
                     </Text>
+
                     <View style={styles.checkoutContainer}>
                       <Text style={styles.expiredText}>N/A</Text>
                     </View>
                   </View>
                 );
               })}
-              <View
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginVertical: hp(2),
-                }}>
-                <Text>No Booking</Text>
-              </View>
             </View>
           </ScrollView>
           <FooterComponent nav={this.props.navigation} />

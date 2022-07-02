@@ -61,8 +61,15 @@ export default class FooterComponent extends PureComponent {
     this.props.nav.navigate('EventList');
   };
 
-  handleCategory = () => {
-    this.props.nav.navigate('MyBooking');
+  handleCategory = async () => {
+    // getting token from AsyncStorage
+    const token = await getData(async_keys.userId);
+
+    if (token === null) {
+      this.props.nav.navigate('Login');
+    } else {
+      this.props.nav.navigate('MyBooking');
+    }
   };
 
   handleLogin = async () => {
