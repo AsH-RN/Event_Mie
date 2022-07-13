@@ -23,6 +23,7 @@ import {FlatGrid} from 'react-native-super-grid';
 import RenderHtml from 'react-native-render-html';
 import Share from 'react-native-share';
 import RNFetchBlob from 'rn-fetch-blob';
+// import Clipboard from '@react-native-clipboard/clipboard';
 
 // Component
 import CustomLoader from '../component/CustomLoader';
@@ -277,16 +278,40 @@ export default class ViewEventScreen extends Component {
         .then(async base64Data => {
           var base64Data = `data:image/png;base64,` + base64Data;
           // here's base64 encoded image
-          await Share.open({
-            url: base64Data,
-            message: title,
-            // +
-            //   ' ' +
-            //   'https://www.sachbedhadak.in/front/Home/newsDetail/' +
-            //   this.state.link,
-          });
-          // remove the file from storage
-          // return fs.unlink(imagePath);
+          // await Share.open({
+          //   url: base64Data,
+          //   message: title,
+          // });
+          // const shareOptions = {
+          //   title: title,
+          //   message: 'test',
+          //   url: 'some share url',
+          //   social: Share.Social.WHATSAPP,
+          //   whatsAppNumber: '9199999999', // country code + phone number
+          //   filename: base64Data, // only for base64 file in Android
+          // };
+
+          // Share.shareSingle(shareOptions)
+          //   .then(res => {
+          //     console.log(res);
+          //   })
+          //   .catch(err => {
+          //     err && console.log(err);
+          //   });
+
+          let facebookParameters = [];
+
+          facebookParameters.push(
+            'u=' + encodeURI('https://bookingqube.classiebit.com/'),
+          );
+          if (title) {
+            facebookParameters.push('quote=' + encodeURI(title));
+            const url =
+              'https://www.facebook.com/sharer/sharer.php?' +
+              facebookParameters.join('&');
+
+            Linking.openURL(url);
+          }
         });
     } catch (error) {
       console.log(error.message);
@@ -294,16 +319,32 @@ export default class ViewEventScreen extends Component {
   };
 
   handleTwitter = async () => {
-    try {
-      Linking.openURL('https://bookingqube.classiebit.com/');
-    } catch (error) {
-      console.log(error.message);
-    }
+    let twitterParameters = [];
+
+    const {title} = this.state;
+    twitterParameters.push(
+      'url=' + encodeURI('https://bookingqube.classiebit.com/'),
+    );
+
+    twitterParameters.push('text=' + encodeURI(title));
+
+    const url =
+      'https://twitter.com/intent/tweet?' + twitterParameters.join('&');
+    Linking.openURL(url)
+      .then(data => {
+        alert('Twitter Opened');
+      })
+      .catch(() => {
+        alert('Something went wrong');
+      });
   };
 
   handleLinkedin = async () => {
+    const url = 'https://bookingqube.classiebit.com/';
     try {
-      Linking.openURL('https://bookingqube.classiebit.com/');
+      Linking.openURL(
+        'https://www.linkedin.com/sharing/share-offsite/?url={https://bookingqube.classiebit.com/}',
+      );
     } catch (error) {
       console.log(error.message);
     }
@@ -311,7 +352,9 @@ export default class ViewEventScreen extends Component {
 
   handleWhatsApp = async () => {
     try {
-      Linking.openURL('https://bookingqube.classiebit.com/');
+      const {title} = this.state;
+
+      Linking.openURL(`whatsapp://send?text=${title}`);
     } catch (error) {
       console.log(error.message);
     }
@@ -319,18 +362,24 @@ export default class ViewEventScreen extends Component {
 
   handleReddit = async () => {
     try {
-      Linking.openURL('https://bookingqube.classiebit.com/');
+      const {posterImage, title, descriptionText} = this.state;
+
+      Linking.openURL(
+        'https://www.reddit.com/submit?' +
+          title +
+          '&url=https://bookingqube.classiebit.com',
+      );
     } catch (error) {
       console.log(error.message);
     }
   };
 
   handleChain = async () => {
-    try {
-      Linking.openURL('https://bookingqube.classiebit.com/');
-    } catch (error) {
-      console.log(error.message);
-    }
+    // try {
+    //   Clipboard.setString('https://bookingqube.classiebit.com/');
+    // } catch (error) {
+    //   console.log(error.message);
+    // }
   };
 
   render() {
@@ -404,7 +453,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleFacebook}>
+                onPress={this.handleTwitter}>
                 <Image
                   source={ic_twitter}
                   resizeMode="cover"
@@ -414,7 +463,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleFacebook}>
+                onPress={this.handleLinkedin}>
                 <Image
                   source={ic_linkedin}
                   resizeMode="cover"
@@ -424,7 +473,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleFacebook}>
+                onPress={this.handleWhatsApp}>
                 <Image
                   source={ic_whatsapp}
                   resizeMode="cover"
@@ -434,7 +483,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleFacebook}>
+                onPress={this.handleReddit}>
                 <Image
                   source={ic_reddit}
                   resizeMode="cover"
@@ -444,7 +493,7 @@ export default class ViewEventScreen extends Component {
 
               <TouchableOpacity
                 style={styles.iconOnPress}
-                onPress={this.handleFacebook}>
+                onPress={this.handleChain}>
                 <Image
                   source={ic_chain}
                   resizeMode="cover"

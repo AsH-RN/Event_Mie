@@ -46,6 +46,7 @@ export default class LoginScreen extends Component {
       name: '',
       email: '',
       password: '',
+      hidePassword: true,
       showProcessingLoader: false,
     };
   }
@@ -60,6 +61,10 @@ export default class LoginScreen extends Component {
 
   handlePasswordChange = password => {
     this.setState({password});
+  };
+
+  setPasswordVisibility = () => {
+    this.setState({hidePassword: !this.state.hidePassword});
   };
 
   handleRegister = async () => {
@@ -186,10 +191,25 @@ export default class LoginScreen extends Component {
               placeholder="Password"
               placeholderTextColor="#c4c3cb"
               keyboardType="default"
+              secureTextEntry={this.state.hidePassword}
               underlineColorAndroid="transparent"
               value={this.state.password}
               onChangeText={this.handlePasswordChange}
             />
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.touchAbleButton}
+              onPress={this.setPasswordVisibility}>
+              <Image
+                source={
+                  this.state.hidePassword
+                    ? require('../assets/icon/ic_hide.png')
+                    : require('../assets/icon/ic_show.png')
+                }
+                style={styles.buttonImage}
+              />
+            </TouchableOpacity>
           </View>
 
           <Text style={styles.agreeTextStyle}>
@@ -287,6 +307,18 @@ const styles = StyleSheet.create({
     // marginLeft: wp(4),
     backgroundColor: '#334759',
     borderRadius: wp(1),
+  },
+  touchAbleButton: {
+    position: 'absolute',
+    right: 10,
+    height: hp(6),
+    width: wp(7),
+    padding: 2,
+  },
+  buttonImage: {
+    resizeMode: 'contain',
+    height: '100%',
+    width: '100%',
   },
   agreeTextStyle: {
     fontSize: wp(3.7),

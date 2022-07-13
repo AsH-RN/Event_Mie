@@ -28,6 +28,7 @@ import CustomLoader from '../component/CustomLoader';
 import HeaderComponent from '../component/HeaderComponent';
 import FooterComponent from '../component/FooterComponent';
 import {showToast} from '../component/CustomToast';
+import ProcessingLoader from '../component/ProcessingLoader';
 
 // Icon
 import ic_header_home_icon from '../assets/icon/ic_header_home_icon.png';
@@ -68,6 +69,7 @@ export default class MyBookingScreen extends Component {
       currency: null,
       attendEventData: [],
       isLoading: true,
+      showProcessingLoader: false,
     };
   }
 
@@ -307,57 +309,69 @@ export default class MyBookingScreen extends Component {
     this.props.navigation.navigate('ViewEvent', {slugTitle: {slug}});
   };
 
-  // handleCancelTicket = async item => {
-  //   let booking_id = [];
-  //   item.attendees.map(i => {
-  //     booking_id.push(i.booking_id);
-  //   });
-  //   // getting token from AsyncStorage
-  //   const token = await getData(async_keys.userId);
+  handleCancelTicket = async item => {
+    let booking_id = [];
+    item.attendees.map(i => {
+      booking_id.push(i.booking_id);
+    });
 
-  //   // axios
-  //   const axios = require('axios');
+    const id = JSON.parse(booking_id);
+    // getting token from AsyncStorage
+    const token = await getData(async_keys.userId);
 
-  //   // creating custom header
-  //   let axiosConfig = {
-  //     headers: {
-  //       Authorization: 'Bearer ' + token,
-  //       'Content-Type': 'text/plain',
-  //     },
-  //   };
+    // axios
+    const axios = require('axios');
 
-  //   try {
-  //     // calling api
-  //     await axios
-  //       ({
-  //         BASE_URL + 'cancel-booking',
-  //         method: "GET",
-  //         (data = {
-  //           event_id: item.event_id,
-  //           ticket_id: item.ticket_id,
-  //           booking_id: booking_id,
-  //         }),
-  //         axiosConfig,}
-  //       )
-  //       .then(response => {
-  //         let newResponse = response;
+    // creating custom header
+    let axiosConfig = {
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      },
+    };
 
-  //         console.log(newResponse);
+    const data = {
+      event_id: item.event_id,
+      ticket_id: item.ticket_id,
+      booking_id: id,
+    };
 
-  //         if (newResponse) {
-  //           const {status, message} = newResponse;
+    try {
+      // starting loader
+      this.setState({showProcessingLoader: true});
 
-  //           if (status === true) {
-  //             // console.log(newResponse.data.currency);
+      // calling api
+      await axios
+        .post(BASE_URL + 'cancel-booking', data, axiosConfig)
+        .then(response => {
+          let newResponse = response;
 
-  //             showToast(message);
-  //           }
-  //         }
-  //       });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+          if (newResponse) {
+            const {status, message} = newResponse.data;
+
+            console.log(newResponse.data);
+
+            if (status === true) {
+              // stopping loader
+              this.setState({showProcessingLoader: false});
+
+              // showing toast
+              showToast(message);
+              // this.forceUpdate();
+              this.componentDidMount();
+            } else {
+              // stopping loader
+              this.setState({showProcessingLoader: false});
+
+              // showing toast
+              showToast(message);
+            }
+          }
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   render() {
     const {isLoading} = this.state;
@@ -581,16 +595,36 @@ export default class MyBookingScreen extends Component {
                         />
                         <Text style={styles.cancelText}>Cancel</Text>
                       </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity style={styles.cancellationContainer}>
-                        <Image
+                    ) : item.booking_cancel === 1 ? (
+                      <View style={styles.cancellationContainer}>
+                        {/* <Image
                           source={ic_cancellation}
                           resizeMode="cover"
                           style={styles.cancelIconStyle}
-                        />
-                        <Text style={styles.cancelText}>Cancelled</Text>
-                      </TouchableOpacity>
-                    )}
+                        /> */}
+                        <Text style={styles.cancelText}>
+                          Cancellation pending
+                        </Text>
+                      </View>
+                    ) : item.booking_cancel === 2 ? (
+                      <View style={styles.cancellationContainer}>
+                        {/* <Image
+                          source={ic_cancellation}
+                          resizeMode="cover"
+                          style={styles.cancelIconStyle}
+                        /> */}
+                        <Text style={styles.cancelText}>Approved</Text>
+                      </View>
+                    ) : item.booking_cancel === 3 ? (
+                      <View style={styles.cancellationContainer}>
+                        {/* <Image
+                          source={ic_cancellation}
+                          resizeMode="cover"
+                          style={styles.cancelIconStyle}
+                        /> */}
+                        <Text style={styles.cancelText}>Refunded</Text>
+                      </View>
+                    ) : null}
 
                     <View style={styles.lineContainer}></View>
 
@@ -601,10 +635,10 @@ export default class MyBookingScreen extends Component {
 
                     <View style={styles.lineContainer}></View>
 
-                    {item.payment_type === 'offline' ? null : (
+                    {item.is_paid === 0 ? null : (
                       <Text style={styles.eventTitleText}>Actions</Text>
                     )}
-                    {item.payment_type === 'offline' ? null : (
+                    {item.is_paid === 0 ? null : (
                       <View style={styles.ticketActionContainer}>
                         <TouchableOpacity style={styles.ticketContainer}>
                           <Image
@@ -626,7 +660,7 @@ export default class MyBookingScreen extends Component {
                       </View>
                     )}
 
-                    {item.payment_type === 'offline' ? null : (
+                    {item.is_paid === 0 ? null : (
                       <TouchableOpacity
                         style={styles.downloadBookingQRcodeContainer}>
                         <Image
@@ -640,7 +674,7 @@ export default class MyBookingScreen extends Component {
                       </TouchableOpacity>
                     )}
 
-                    {item.payment_type === 'offline' ? null : (
+                    {item.is_paid === 0 ? null : (
                       <TouchableOpacity style={styles.checkInButtonContainer}>
                         <Image
                           source={ic_check_in}
@@ -779,6 +813,8 @@ export default class MyBookingScreen extends Component {
               </View>
             </View>
           </ScrollView>
+
+          {this.state.showProcessingLoader && <ProcessingLoader />}
           <FooterComponent nav={this.props.navigation} />
         </SafeAreaView>
       );

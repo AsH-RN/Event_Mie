@@ -74,7 +74,7 @@ export default class HomeScreen extends Component {
           if (newResponse) {
             const {success} = newResponse.data;
 
-            console.log(newResponse.data.data.image_url_prefix);
+            console.log(newResponse.data);
 
             if (success === true) {
               this.setState({
@@ -120,8 +120,14 @@ export default class HomeScreen extends Component {
 
   handleAllEvent1 = item => {
     // console.log(item.slug);
-    const slug = item.slug;
-    this.props.navigation.navigate('EventList', {searchData: {slug}});
+    const name = item.name;
+    this.props.navigation.navigate('EventList', {searchData: {name}});
+  };
+
+  handleCity = item => {
+    const city = item.city;
+    // console.log(city);
+    this.props.navigation.navigate('EventList', {cityData: {city}});
   };
 
   render() {
@@ -506,7 +512,7 @@ export default class HomeScreen extends Component {
                         </Text>
                       </View>
 
-                      <Text style={styles.eventTitleTextStyle}>
+                      <Text style={styles.eventTitleTextStyle2}>
                         {item.title}
                       </Text>
 
@@ -594,7 +600,9 @@ export default class HomeScreen extends Component {
                   // style={styles.gridView}
                   spacing={2}
                   renderItem={({item}) => (
-                    <TouchableOpacity style={styles.categoryContainer}>
+                    <TouchableOpacity
+                      style={styles.categoryContainer}
+                      onPress={() => this.handleCity(item)}>
                       <ImageBackground
                         source={{uri: imageUrl + item.poster}}
                         resizeMode="cover"
@@ -895,6 +903,12 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(2),
   },
   eventTitleTextStyle1: {
+    fontSize: wp(3.8),
+    fontWeight: '700',
+    color: '#fff',
+    marginHorizontal: wp(2),
+  },
+  eventTitleTextStyle2: {
     fontSize: wp(3.8),
     fontWeight: '700',
     color: '#fff',

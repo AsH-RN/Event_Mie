@@ -1,36 +1,11 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable react-native/no-inline-styles */
+import React from 'react';
+import {View, StyleSheet, ActivityIndicator} from 'react-native';
 
-import React, {Component} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import LottieView from 'lottie-react-native';
-
-export class CustomLoader extends Component {
-  componentDidMount() {
-    this.animation.play();
-    // Or set a specific startFrame and endFrame with:
-    this.animation.play(30, 120);
-  }
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <LottieView
-          style={{height: 150, aspectRatio: 1 / 1}}
-          ref={animation => {
-            this.animation = animation;
-          }}
-          source={require('../assets/image/88146-event-venue.json')}
-          autoPlay
-          loop
-        />
-        <Text>Loading</Text>
-      </View>
-    );
-  }
-}
-
-export default CustomLoader;
+const CustomLoader = () => (
+  <View style={styles.container}>
+    <ActivityIndicator size="large" color="#4a5ccc" />
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -39,3 +14,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+export default CustomLoader;

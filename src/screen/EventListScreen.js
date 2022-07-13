@@ -44,92 +44,69 @@ export default class EventListScreen extends Component {
     this.state = {
       searchText: '',
       selectedCategory: '',
-      category: [
-        {
-          itemName: 'All',
-        },
-        {
-          itemName: 'Business & Seminars',
-        },
-        {
-          itemName: 'Yoga & Health',
-        },
-        {
-          itemName: 'Education & Classes',
-        },
-        {
-          itemName: 'Sports & Fitness',
-        },
-        {
-          itemName: 'Music & Concerts',
-        },
-        {
-          itemName: 'Charity & Non-profit',
-        },
-        {
-          itemName: 'Food & Drink',
-        },
-        {
-          itemName: 'Travel & Trekking',
-        },
-        {
-          itemName: 'Science & Tech',
-        },
-      ],
+      category: [],
       dateFilter: '',
       selectedPrice: '',
-      price: [
-        {
-          itemName: 'Any Price',
-        },
-        {
-          itemName: 'Free',
-        },
-        {
-          itemName: 'Paid',
-        },
-      ],
+      price: [],
       selectedCountry: '',
-      country: [
-        {
-          itemName: 'All',
-        },
-        {
-          itemName: 'Japan',
-        },
-        {
-          itemName: 'China',
-        },
-        {
-          itemName: 'Australia',
-        },
-        {
-          itemName: 'United Kingdom',
-        },
-        {
-          itemName: 'Canada',
-        },
-      ],
+      country: [],
+      selectedCity: '',
+      cities: [],
       eventData: [],
       featureEventList: [],
+      cityCheck: true,
     };
 
     // fetching navigation props
     this.searchData = this.props.navigation.getParam('searchData', null);
     this.searchInfo = this.props.navigation.getParam('searchInfo', null);
+    this.cityData = this.props.navigation.getParam('cityData', null);
     // console.log(this.searchData.slug + ' ' + 'here search data');
-    console.log(this.searchInfo + ' ' + 'here search info');
+    // console.log(this.searchInfo + ' ' + 'here search info');
   }
 
   componentDidMount() {
+    this.getFilters();
     if (this.searchInfo !== null) {
       this.checkSearchData();
     } else if (this.searchData !== null) {
       this.checkSearchData1();
+    } else if (this.cityData !== null) {
+      this.getCityData();
     } else {
       this.fetchSearchData();
     }
   }
+
+  getFilters = async () => {
+    const axios = require('axios');
+
+    try {
+      await axios
+        .get(BASE_URL + 'eventFilters')
+
+        // processing response
+        .then(response => {
+          let newResponse = response;
+
+          console.log(newResponse.data.data);
+
+          if (newResponse) {
+            const {success} = newResponse.data;
+
+            if (success === true) {
+              this.setState({
+                category: newResponse.data.data.categories,
+                price: newResponse.data.data.price_filter,
+                country: newResponse.data.data.country_filter.countries,
+              });
+            }
+          }
+        });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   fetchSearchData = async () => {
     const axios = require('axios');
@@ -142,7 +119,7 @@ export default class EventListScreen extends Component {
         .then(response => {
           let newResponse = response;
 
-          console.log(newResponse.data);
+          // console.log(newResponse.data.categories);
 
           if (newResponse) {
             const {success} = newResponse.data;
@@ -163,23 +140,9 @@ export default class EventListScreen extends Component {
 
     const axios = require('axios');
 
-    const {
-      // searchText,
-      // selectedCategory,
-      // dateFilter,
-      // selectedPrice,
-      // selectedCountry,
-    } = this.state;
-
     // preparing params
     const params = {
-      // category: this.searchData.slug || selectedCategory || '',
       search: this.searchInfo.search,
-      // start_date: dateFilter,
-      // end_date: dateFilter,
-      // price: selectedPrice,
-      // country: selectedCountry,
-      // city: '',
     };
 
     // console.log(params.start_date);
@@ -207,27 +170,47 @@ export default class EventListScreen extends Component {
   };
 
   checkSearchData1 = async () => {
-    this.setState({selectedCategory: this.searchData.slug});
+    this.setState({selectedCategory: this.searchData.name});
 
     const axios = require('axios');
 
-    const {
-      // searchText,
-      // selectedCategory,
-      // dateFilter,
-      // selectedPrice,
-      // selectedCountry,
-    } = this.state;
+    // preparing params
+    const params = {
+      category: this.searchData.name,
+    };
+
+    // console.log(params.start_date);
+
+    console.log(params);
+
+    await axios
+      .post(BASE_URL + 'events', params)
+
+      // processing response
+      .then(response => {
+        let newResponse = response;
+
+        console.log(newResponse);
+
+        if (newResponse) {
+          const {success} = newResponse.data;
+
+          if (success === true) {
+            // console.log(newResponse.data.events.data);
+            this.setState({featureEventList: newResponse.data.events.data});
+          }
+        }
+      });
+  };
+
+  getCityData = async () => {
+    this.setState({searchText: this.cityData.city});
+
+    const axios = require('axios');
 
     // preparing params
     const params = {
-      category: this.searchData.slug,
-      // search: this.searchInfo.search || searchText,
-      // start_date: dateFilter,
-      // end_date: dateFilter,
-      // price: selectedPrice,
-      // country: selectedCountry,
-      // city: '',
+      category: this.cityData.city,
     };
 
     // console.log(params.start_date);
@@ -288,7 +271,7 @@ export default class EventListScreen extends Component {
 
       // console.log(params.start_date);
 
-      console.log(params);
+      // console.log(params);
 
       await axios
         .post(BASE_URL + 'events', params, axiosConfig)
@@ -297,7 +280,7 @@ export default class EventListScreen extends Component {
         .then(response => {
           let newResponse = response;
 
-          console.log(newResponse.data);
+          // console.log(newResponse.data);
 
           if (newResponse) {
             const {success} = newResponse.data;
@@ -319,7 +302,7 @@ export default class EventListScreen extends Component {
     this.filterData();
   };
 
-  handleSelectedCity = async value => {
+  handleSelectedCategory = async value => {
     this.setState({
       selectedCategory: value,
     });
@@ -337,12 +320,48 @@ export default class EventListScreen extends Component {
   };
 
   handleSelectedCountry = async value => {
+    const {country} = this.state;
+
+    let countryCode = country.find(i => {
+      return i.country_name === value;
+    });
     await this.setState({
       selectedCountry: value,
-      isEnabled: true,
+      cityCheck: false,
     });
 
-    this.filterData();
+    this.getCities(countryCode);
+    // this.filterData();
+  };
+
+  getCities = async countryCode => {
+    const axios = require('axios');
+
+    const params = {country_id: countryCode.id};
+
+    try {
+      await axios
+        .post(BASE_URL + 'getCities', params)
+
+        // processing response
+        .then(response => {
+          let newResponse = response;
+
+          if (newResponse) {
+            const {success} = newResponse.data;
+
+            if (success === true) {
+              console.log(newResponse.data.data);
+
+              this.setState({
+                cities: newResponse.data.data,
+              });
+            }
+          }
+        });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   handleDateChange = dateFilter => {
@@ -382,6 +401,34 @@ export default class EventListScreen extends Component {
   handleChangeToCategory = () => {
     this.searchData = null;
     this.forceUpdate();
+  };
+
+  handleSelectedCity = async value => {
+    const axios = require('axios');
+
+    // preparing params
+    const params = {
+      city: value,
+    };
+
+    await axios
+      .post(BASE_URL + 'events', params)
+
+      // processing response
+      .then(response => {
+        let newResponse = response;
+
+        console.log(newResponse);
+
+        if (newResponse) {
+          const {success} = newResponse.data;
+
+          if (success === true) {
+            // console.log(newResponse.data.events.data);
+            this.setState({featureEventList: newResponse.data.events.data});
+          }
+        }
+      });
   };
 
   itemSeparator = () => <View style={styles.separator} />;
@@ -432,28 +479,11 @@ export default class EventListScreen extends Component {
             <View style={styles.inputContainer}>
               {this.searchData === null ? (
                 <RNPickerSelect
-                  onValueChange={this.handleSelectedCity}
-                  items={[
-                    {label: 'All', value: 'All'},
-                    {
-                      label: 'Business & Seminars',
-                      value: 'Business & Seminars',
-                    },
-                    {label: 'Yoga & Health', value: 'Yoga & Health'},
-                    {
-                      label: 'Education & Classes',
-                      value: 'Education & Classes',
-                    },
-                    {label: 'Sports & Fitness', value: 'Sports & Fitness'},
-                    {label: 'Music & Concerts', value: 'Music & Concerts'},
-                    {
-                      label: 'Charity & Non-profit',
-                      value: 'Charity & Non-profit',
-                    },
-                    {label: 'Food & Drink', value: 'Food & Drink'},
-                    {label: 'Travel & Trekking', value: 'Travel & Trekking'},
-                    {label: 'Science & Tech', value: 'Science & Tech'},
-                  ]}
+                  onValueChange={this.handleSelectedCategory}
+                  items={this.state.category.map(item => ({
+                    label: item.name,
+                    value: item.name,
+                  }))}
                   style={pickerStyle}
                   useNativeAndroidPickerStyle={false}
                 />
@@ -491,11 +521,10 @@ export default class EventListScreen extends Component {
             <View style={styles.inputContainer}>
               <RNPickerSelect
                 onValueChange={this.handleSelectedPrice}
-                items={[
-                  {label: 'All', value: 'All'},
-                  {label: 'Paid', value: 'Paid'},
-                  {label: 'Free', value: 'Free'},
-                ]}
+                items={this.state.price.map(item => ({
+                  label: item.name,
+                  value: item.value,
+                }))}
                 style={pickerStyle}
                 useNativeAndroidPickerStyle={false}
               />
@@ -504,35 +533,27 @@ export default class EventListScreen extends Component {
             <Text style={styles.textInputText}>Country</Text>
             <View style={styles.inputContainer}>
               <RNPickerSelect
+                items={this.state.country.map(item => ({
+                  label: item.country_name,
+                  value: item.country_name,
+                }))}
                 onValueChange={this.handleSelectedCountry}
-                items={[
-                  {
-                    label: 'All',
-                    value: 'All',
-                  },
-                  {
-                    label: 'Japan',
-                    value: 'Japan',
-                  },
-                  {
-                    label: 'China',
-                    value: 'China',
-                  },
-                  {
-                    label: 'Australia',
-                    value: 'Australia',
-                  },
-                  {
-                    label: 'United Kingdom',
-                    value: 'United Kingdom',
-                  },
-                  {
-                    label: 'Canada',
-                    value: 'Canada',
-                  },
-                ]}
                 style={pickerStyle}
                 useNativeAndroidPickerStyle={false}
+              />
+            </View>
+
+            <Text style={styles.textInputText}>City</Text>
+            <View style={styles.inputContainer}>
+              <RNPickerSelect
+                onValueChange={this.handleSelectedCity}
+                items={this.state.cities.map(item => ({
+                  label: item.city,
+                  value: item.city,
+                }))}
+                style={pickerStyle}
+                useNativeAndroidPickerStyle={false}
+                disabled={this.state.cityCheck}
               />
             </View>
 

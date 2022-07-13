@@ -232,6 +232,21 @@ export default class ProfileScreen extends Component {
     Keyboard.dismiss();
 
     // getting token from AsyncStorage
+    const token = await getData(async_keys.userId);
+
+    // axios
+    const axios = require('axios');
+
+    // creating custom header
+    let axiosConfig = {
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'multipart/form-data',
+      },
+    };
+
+    console.log(token);
+
     const {
       name,
       email,
@@ -245,45 +260,49 @@ export default class ProfileScreen extends Component {
     } = this.state;
 
     try {
-      // params.file = selectedFile;
       // starting processing loader
       this.setState({showProcessingLoader: true});
 
-      // preparing params
-      let params = {
-        name: name,
-        email: email,
-        current: currentPassword,
-        password: newPassword,
-        password_confirmation: confirmPassword,
-        address: address,
-        phone: phone,
-        taxpayer_number: taxpayerNumber,
-        // profile_image: params.file
-        // profile_image: selectedFile,
-      };
+      var data = new FormData();
+      data.append('name', name);
+      data.append('email', email);
+      data.append('current', currentPassword);
+      data.append('password', newPassword);
+      data.append('password_confirmation', confirmPassword);
+      data.append('address', address);
+      data.append('taxpayer_number', taxpayerNumber);
+      data.append('profile_image', {
+        name: selectedFile[0].name,
+        type: selectedFile[0].type,
+        uri: selectedFile[0].uri,
+      });
 
-      // calling api
-      const response = await makeRequest(
-        BASE_URL + 'profile/update',
-        params,
-        true,
-      );
+      await axios
+        .post(BASE_URL + 'profile/update', data, axiosConfig)
+        .then(response => {
+          let newResponse = response.data;
 
-      if (response) {
-        const {success} = response;
+          if (newResponse) {
+            console.log(newResponse);
 
-        if (success === true) {
-          // starting processing loader
-          this.setState({showProcessingLoader: false});
+            const {success, data} = newResponse;
 
-          showToast('Profile details updated successfully.');
+            if (success === true) {
+              // starting processing loader
+              this.setState({showProcessingLoader: false});
 
-          this.forceUpdate();
-        }
-      }
+              // showing toast
+              showToast(data);
+              this.componentDidMount();
+            }
+          }
+        });
     } catch (error) {
-      console.log(error.message);
+      // starting processing loader
+      this.setState({showProcessingLoader: false});
+
+      showToast('Something went wrong.');
+      console.log(error);
     }
   };
 
